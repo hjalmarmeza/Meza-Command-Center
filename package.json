@@ -1,0 +1,12 @@
+{
+  "name": "meza-command-center",
+  "version": "1.0.0",
+  "description": "Unified Digital Command Center for Hjalmar Meza",
+  "main": "api/webhook.js",
+  "dependencies": {
+    "node-fetch": "^3.3.0"
+  },
+  "scripts": {
+    "start": "node api/webhook.js"
+  }
+}
