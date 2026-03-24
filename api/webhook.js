@@ -151,7 +151,7 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       { name: 'Voxmind AI', url: 'https://hjalmarmeza.github.io/Voxmind_AI/' },
       { name: 'MusiChris', url: 'https://hjalmarmeza.github.io/MusiChris-App/' },
       { name: 'GeoRadio', url: 'https://hjalmarmeza.github.io/GeoRadio/' },
-      { name: 'Command Center', url: 'https://meza-command-center.vercel.app/' }
+      { name: 'Command Center', url: 'https://hjalmarmeza.github.io/Meza-Command-Center/' }
     ];
 
     await sendTelegram(chatId, token, '📡 *Escaneando estado de tus proyectos...*', 'Markdown');
