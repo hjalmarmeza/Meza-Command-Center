@@ -319,17 +319,29 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
   // COMANDO: /trends [País] (Extrae del RSS oficial)
   if (text.startsWith('/trends')) {
     const randomCountries = ['ES', 'MX', 'CO', 'PE', 'AR'];
-    const country = text.replace('/trends', '').trim().toUpperCase() || randomCountries[Math.floor(Math.random() * randomCountries.length)];
+    let input = text.replace('/trends', '').trim().toUpperCase();
+    
+    // Mapeo de nombres comunes a ISO 3166-1 alpha-2
+    const isoMap = {
+      'PERU': 'PE', 'PERÚ': 'PE', 'ESPAÑA': 'ES', 'ESPANA': 'ES', 
+      'MEXICO': 'MX', 'MÉXICO': 'MX', 'COLOMBIA': 'CO', 'ARGENTINA': 'AR',
+      'CHILE': 'CL', 'ECUADOR': 'EC', 'VENEZUELA': 'VE', 'PANAMA': 'PA'
+    };
+    
+    const country = isoMap[input] || (input.length === 2 ? input : randomCountries[Math.floor(Math.random() * randomCountries.length)]);
     const rssUrl = `https://trends.google.com/trends/trendingsearches/daily/rss?geo=${country}`;
 
     try {
       const res = await fetch(rssUrl);
       const xml = await res.text();
       
-      // Extracción simple de Título y Tráfico usando Regex (Sin librerías para mantener Costo 0 y Rapidez)
       const items = xml.match(/<item>([\s\S]*?)<\/item>/g)?.slice(0, 10) || [];
+      if (items.length === 0) {
+        await sendTelegram(chatId, token, `⚠️ No hay tendencias activas en ${country} ahora mismo.`);
+        return res.status(200).send('OK');
+      }
+
       let trendsMsg = `🔥 *Tendencias en ${country}*\n\n`;
-      
       items.forEach(item => {
         const title = item.match(/<title>(.*?)<\/title>/)?.[1] || 'Sin título';
         const traffic = item.match(/<ht:approx_traffic>(.*?)<\/ht:approx_traffic>/)?.[1] || 'N/A';
