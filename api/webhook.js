@@ -208,7 +208,10 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       const data = await resEur.json();
       const usd = data.rates.USD;
       const cop = data.rates.COP;
-      const msg = `💱 *Mercado de Divisas*\n\n1 EUR ➡️ *${usd}* USD\n1 EUR ➡️ *${cop}* COP\n\n_Actualizado al instante (Costo 0)_`;
+      const pen = data.rates.PEN;
+      const usdToPen = (pen / usd).toFixed(2);
+
+      const msg = `💱 *Mercado de Divisas*\n\n1 EUR ➡️ *${usd}* USD\n1 EUR ➡️ *${cop}* COP\n1 EUR ➡️ *${pen}* PEN\n\n1 USD ➡️ *${usdToPen}* PEN\n\n_Actualizado al instante (Costo 0)_`;
       await sendTelegram(chatId, token, msg, 'Markdown');
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error al consultar divisas.');
