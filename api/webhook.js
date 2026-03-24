@@ -219,20 +219,33 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /news (Noticias Reales)
-  if (text === '/news') {
-    const queries = ["Inteligencia+Artificial", "Logística+E-commerce", "Supply+Chain+Innovacion", "Tecnología+Logística", "Automatización+Empresarial"];
-    const q = queries[Math.floor(Math.random() * queries.length)];
+  // COMANDO: /news [Tema] (Noticias bajo demanda)
+  if (text.startsWith('/news')) {
+    let q = text.replace('/news', '').trim();
+    let isSearch = true;
+
+    if (!q) {
+      const defaultQueries = ["Inteligencia+Artificial", "Logística+E-commerce", "Supply+Chain", "Tecnología+Logística", "Automatización"];
+      q = defaultQueries[Math.floor(Math.random() * defaultQueries.length)];
+      isSearch = false;
+    } else {
+      q = encodeURIComponent(q);
+    }
+
     const rssUrl = `https://news.google.com/rss/search?q=${q}&hl=es&gl=ES&ceid=ES:es`;
     
     try {
       const res = await fetch(rssUrl);
       const xml = await res.text();
-      // Regex mejorado para capturar ítems de forma más robusta
       const items = xml.match(/<item>([\s\S]*?)<\/item>/g)?.slice(0, 5) || [];
       
-      let msg = `📰 *Radar de Innovación (${q.replace(/\+/g, ' ')})*\n\n`;
+      let msg = `📰 *${isSearch ? 'Resultados para: ' + decodeURIComponent(q) : 'Radar de Innovación (' + q.replace(/\+/g, ' ') + ')'}*\n\n`;
       
+      if (items.length === 0) {
+        await sendTelegram(chatId, token, `⚠️ No encontré noticias recientes sobre *${decodeURIComponent(q)}*. Intenta con otro término.`, 'Markdown');
+        return res.status(200).send('OK');
+      }
+
       items.forEach(item => {
         const titleMatch = item.match(/<title>(.*?)<\/title>/);
         const linkMatch = item.match(/<link>(.*?)<\/link>/);
@@ -244,7 +257,7 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
         }
       });
       
-      msg += `_Fuente: Google News (Localización: ES)_`;
+      msg += `_Fuente: Google News (ES)_`;
       await sendTelegram(chatId, token, msg, 'Markdown');
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error al sincronizar con el radar de noticias.');
