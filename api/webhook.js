@@ -227,6 +227,61 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
+  // COMANDO: /qr [URL]
+  if (text.startsWith('/qr')) {
+    const url = text.replace('/qr', '').trim();
+    if (!url) {
+      await sendTelegram(chatId, token, 'Uso: `/qr https://tuweb.com`');
+      return res.status(200).send('OK');
+    }
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}&color=D4AF37&bgcolor=0a1120`;
+    await sendTelegram(chatId, token, `🖼️ *Generador de QR Pro*\n\n[Pulsa aquí para ver tu QR](${qrUrl})`, 'Markdown');
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /tech [Repo]
+  if (text.startsWith('/tech')) {
+    const repoName = text.replace('/tech', '').trim();
+    const gitToken = process.env.GITHUB_PAT;
+    if (!repoName) {
+      await sendTelegram(chatId, token, 'Uso: `/tech NombreRepo` (ej: cv)');
+      return res.status(200).send('OK');
+    }
+
+    try {
+      const pkgRes = await fetch(`https://api.github.com/repos/${ALLOWED_CHAT_ID === '7823163854' ? 'hjalmarmeza' : ''}/${repoName}/contents/package.json`, {
+        headers: { 'Authorization': `token ${gitToken}` }
+      });
+      if (pkgRes.status === 404) {
+        await sendTelegram(chatId, token, '❌ No se encontró el repo o no tiene package.json.');
+        return res.status(200).send('OK');
+      }
+      const pkgData = await pkgRes.json();
+      const content = Buffer.from(pkgData.content, 'base64').toString();
+      const pkg = JSON.parse(content);
+      const deps = Object.keys(pkg.dependencies || {}).join(', ') || 'Ninguna';
+      
+      await sendTelegram(chatId, token, `💻 *Stack Tecnológico: ${repoName}*\n\n*Dependencias:* ${deps.slice(0, 200)}...`, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error al auditar el stack.');
+    }
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /estrategia
+  if (text === '/estrategia') {
+    const modelos = [
+      "🧠 *Navaja de Ockham:* La solución más simple suele ser la correcta. Elimina lo innecesario.",
+      "📊 *Principio de Pareto (80/20):* El 20% de tus acciones genera el 80% de tus resultados. Identifica ese 20%.",
+      "🔄 *Bucle OODA:* Observar, Orientar, Decidir, Actuar. La clave es la velocidad de iteración.",
+      "🏗️ *Primeros Principios:* Descompón el problema hasta sus verdades fundamentales y reconstruye desde ahí.",
+      "⏳ *Ley de Parkinson:* El trabajo se expande hasta llenar el tiempo disponible. Pon fechas límite cortas."
+    ];
+    const random = modelos[Math.floor(Math.random() * modelos.length)];
+    await sendTelegram(chatId, token, `🎯 *Modelo Mental Estratégico*\n\n${random}`, 'Markdown');
+    return res.status(200).send('OK');
+  }
+
   // Fallback para comandos no reconocidos
   if (text.startsWith('/')) {
     await sendTelegram(chatId, token, 'Comando no reconocido todavía. Estamos activando los módulos uno a uno. Prueba con /comandos.');
