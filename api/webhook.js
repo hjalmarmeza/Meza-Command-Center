@@ -135,26 +135,37 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
   // COMANDO: /health (Estado de servidores)
   if (text === '/health') {
     const urls = [
-      { name: 'CV Interactivo', url: 'https://hjalmarmeza.github.io/CV_01_Web_Interactivo/' },
-      { name: 'VCard Contacto', url: 'https://hjalmarmeza.github.io/CV_02_VCard_Contacto/' },
-      { name: 'QR Identity', url: 'https://hjalmarmeza.github.io/CV_03_QR_Identity/' },
-      { name: 'Linkedinmatic', url: 'https://hjalmarmeza.github.io/Linkedinmatic/' },
-      { name: 'Talk.Me', url: 'https://hjalmarmeza.github.io/Talk.Me/' },
-      { name: 'Vigilante', url: 'https://hjalmarmeza.github.io/Vigilante_Privacidad/' },
-      { name: 'Loom Port', url: 'https://hjalmarmeza.github.io/Loom/' },
-      { name: 'Command Center', url: 'https://meza-command-center.vercel.app' },
-      { name: 'CV Carlos', url: 'https://hjalmarmeza.github.io/CV-Carlos/' }
+      { name: 'CV Interactivo', url: 'https://hjalmarmeza.github.io/cv/' },
+      { name: 'VCard Contacto', url: 'https://hjalmarmeza.github.io/vcard/' },
+      { name: 'QR Identity', url: 'https://hjalmarmeza.github.io/qrvcard/' },
+      { name: 'Linkedinmatic', url: 'https://hjalmarmeza.github.io/linkedin-ia/' },
+      { name: 'Talk.Me', url: 'https://hjalmarmeza.github.io/talk.me/' },
+      { name: 'Vigilante', url: 'https://hjalmarmeza.github.io/vigilante-privacidad/' },
+      { name: 'Allivisión', url: 'https://hjalmarmeza.github.io/allivision/' },
+      { name: 'Restaurante', url: 'https://hjalmarmeza.github.io/sistema-restaurante/' },
+      { name: 'Kopilot', url: 'https://hjalmarmeza.github.io/kopilot/' },
+      { name: 'Chartless', url: 'https://hjalmarmeza.github.io/chartless/' },
+      { name: 'Mediclock', url: 'https://hjalmarmeza.github.io/Mediclock/' },
+      { name: 'Handracer', url: 'https://hjalmarmeza.github.io/handracer/' },
+      { name: 'Moodweather', url: 'https://hjalmarmeza.github.io/moodweather/' },
+      { name: 'Historias', url: 'https://hjalmarmeza.github.io/jardindehistorias/' },
+      { name: 'Voxmind AI', url: 'https://hjalmarmeza.github.io/Voxmind_AI/' },
+      { name: 'MusiChris', url: 'https://hjalmarmeza.github.io/MusiChris-App/' },
+      { name: 'GeoRadio', url: 'https://hjalmarmeza.github.io/GeoRadio/' },
+      { name: 'Command Center', url: 'https://meza-command-center.vercel.app/' }
     ];
 
-    await sendTelegram(chatId, token, '📡 *Escaneando estado de tus 20 proyectos...*', 'Markdown');
+    await sendTelegram(chatId, token, '📡 *Escaneando estado de tus proyectos...*', 'Markdown');
 
     let healthReport = '🖥️ *Health Check Global*\n\n';
     
     for (const site of urls) {
       try {
-        const res = await fetch(site.url, { method: 'HEAD' });
-        const icon = res.ok ? '🟢' : '🔴';
-        healthReport += `${icon} *${site.name}* (${res.status})\n`;
+        const fetchRes = await fetch(site.url, { method: 'HEAD' });
+        // Command Center devuelve 405 (normal), los demás deben ser 200
+        const isOk = fetchRes.ok || (site.name === 'Command Center' && fetchRes.status === 405);
+        const icon = isOk ? '🟢' : '🔴';
+        healthReport += `${icon} *${site.name}* (${fetchRes.status})\n`;
       } catch (e) {
         healthReport += `🔴 *${site.name}* (Offline)\n`;
       }
