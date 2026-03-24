@@ -221,8 +221,8 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
 
   // COMANDO: /news
   if (text === '/news') {
-    const aiUrl = `https://news.google.com/search?q=Inteligencia+Artificial+Logistica+after:1d&hl=es`;
-    const msg = `📰 *Radar de Innovación (Últimas 24h)*\n\n- [Noticias de IA y Logística](${aiUrl})`;
+    const aiUrl = `https://news.google.com/search?q=Inteligencia+Artificial+Logistica+when:24h&hl=es-419&gl=ES&ceid=ES:es`;
+    const msg = `📰 *Radar de Innovación (24h - Español)*\n\n- [Noticias de IA y Logística](${aiUrl})\n\n_Resultados filtrados en tu idioma._`;
     await sendTelegram(chatId, token, msg, 'Markdown');
     return res.status(200).send('OK');
   }
@@ -268,17 +268,29 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /estrategia
+  // COMANDO: /estrategia (Mentoría Táctica)
   if (text === '/estrategia') {
-    const modelos = [
-      "🧠 *Navaja de Ockham:* La solución más simple suele ser la correcta. Elimina lo innecesario.",
-      "📊 *Principio de Pareto (80/20):* El 20% de tus acciones genera el 80% de tus resultados. Identifica ese 20%.",
-      "🔄 *Bucle OODA:* Observar, Orientar, Decidir, Actuar. La clave es la velocidad de iteración.",
-      "🏗️ *Primeros Principios:* Descompón el problema hasta sus verdades fundamentales y reconstruye desde ahí.",
-      "⏳ *Ley de Parkinson:* El trabajo se expande hasta llenar el tiempo disponible. Pon fechas límite cortas."
+    const frameworks = [
+      {
+        t: "🚀 *Growth Hacking:* AARRR",
+        d: "Adquisición, Activación, Retención, Referencia, Ingresos. ¿En qué etapa estás fallando hoy?"
+      },
+      {
+        t: "🛡️ *Gestión de Crisis:* Matriz de Eisenhower",
+        d: "Diferencia lo **Urgente** de lo **Importante**. Si no es importante, delégalo o elíminalo."
+      },
+      {
+        t: "📈 *Escalabilidad:* Ley de Brooks",
+        d: "Añadir personal a un proyecto retrasado lo retrasa más. Optimiza procesos antes de contratar."
+      },
+      {
+        t: "🏢 *Cultura Directiva:* High Output Management",
+        d: "Un manager solo produce mediante sus equipos. Tu métrica es el ratio de salida de tu unidad."
+      }
     ];
-    const random = modelos[Math.floor(Math.random() * modelos.length)];
-    await sendTelegram(chatId, token, `🎯 *Modelo Mental Estratégico*\n\n${random}`, 'Markdown');
+    const item = frameworks[Math.floor(Math.random() * frameworks.length)];
+    const msg = `🎯 *Protocolo de Mentoría Ejecutiva*\n\n${item.t}\n\n💡 *Acción:* ${item.d}\n\n_Manual táctico para directores._`;
+    await sendTelegram(chatId, token, msg, 'Markdown');
     return res.status(200).send('OK');
   }
 
@@ -292,8 +304,8 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
   // COMANDO: /trends [País] (ej: ES, MX, CO)
   if (text.startsWith('/trends')) {
     const country = text.replace('/trends', '').trim().toUpperCase() || 'ES';
-    const trendsUrl = `https://trends.google.com/trends/trendingsearches/daily?geo=${country}&hl=es`;
-    await sendTelegram(chatId, token, `🔥 *Tendencias del día (${country})*\n\n[Ver qué es viral hoy](${trendsUrl})`, 'Markdown');
+    const trendsUrl = `https://trends.google.com/trends/trendingsearches/daily?geo=${country}&hl=es-419`;
+    await sendTelegram(chatId, token, `🔥 *Tendencias del día (${country} - Español)*\n\n[Ver qué es viral hoy](${trendsUrl})`, 'Markdown');
     return res.status(200).send('OK');
   }
 
