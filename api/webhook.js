@@ -425,77 +425,97 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /briefing (Resumen Ejecutivo Diario)
+  // COMANDO: /briefing (Resumen Ejecutivo 360°)
   if (text === '/briefing') {
-    await sendTelegram(chatId, token, '☕ *Preparando tu briefing matutino...*');
+    await sendTelegram(chatId, token, '☕ *Sincronizando centros de datos para tu briefing...*');
     
     try {
-      // 1. Divisas principales
+      // 1. Mercado de Divisas Enriquecido
       const resDiv = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-      const dataDiv = await resDiv.json();
-      const pen = dataDiv.rates.PEN;
+      const d = await resDiv.json();
+      const divTable = `💰 *MERCADOS (USD)*\n\`\`\`\nSOL (PEN): ${d.rates.PEN}\nEUR:      ${d.rates.EUR}\nCOP:      ${d.rates.COP.toFixed(0)}\n\`\`\``;
 
-      // 2. Noticia destacada (IA)
+      // 2. Inteligencia de Noticias (Top 3)
       const resNews = await fetch('https://news.google.com/rss/search?q=Inteligencia+Artificial&hl=es&gl=ES&ceid=ES:es');
       const xmlNews = await resNews.text();
-      const topNews = xmlNews.match(/<title>(.*?)<\/title>/)?.[2] || 'Sin noticias destacadas';
+      const newsItems = xmlNews.match(/<item>([\s\S]*?)<\/item>/g)?.slice(0, 3) || [];
+      let newsBlock = '🤖 *IA & TECNOLOGÍA*\n';
+      newsItems.forEach((item, i) => {
+        const t = item.match(/<title>(.*?)<\/title>/)?.[1].replace(/&quot;/g, '"').split(' - ')[0] || 'Noticia';
+        const l = item.match(/<link>(.*?)<\/link>/)?.[1] || '#';
+        newsBlock += `${i+1}. [${t.slice(0, 45)}...](${l})\n`;
+      });
 
-      // 3. Top Tendencia Perú
+      // 3. Tendencias Verificadas (Top 3 Perú)
       const resTrends = await fetch('https://trends.google.com/trending/rss?geo=PE', {
         headers: { 'User-Agent': 'Mozilla/5.0' }
       });
       const xmlTrends = await resTrends.text();
-      const topTrend = xmlTrends.match(/<title>(.*?)<\/title>/)?.[2]?.replace('<![CDATA[', '').replace(']]>', '') || 'Sin tendencias';
+      const trendItems = xmlTrends.match(/<item>([\s\S]*?)<\/item>/gi)?.slice(0, 3) || [];
+      let trendBlock = '🔥 *TRENDS PERÚ*\n';
+      trendItems.forEach((item, i) => {
+        const t = item.match(/<title>(.*?)<\/title>/i)?.[1].replace('<![CDATA[', '').replace(']]>', '') || 'Trend';
+        const v = item.match(/<ht:approx_traffic>(.*?)<\/ht:approx_traffic>/i)?.[1] || '+?';
+        trendBlock += `• ${t} (${v})\n`;
+      });
 
-      const briefing = `💼 *BRIEFING EJECUTIVO - ${new Date().toLocaleDateString('es-ES')}*\n\n` +
-        `💰 *Mercado:* 1 USD ➡️ *${pen}* PEN\n` +
-        `🔥 *Trend PE:* ${topTrend}\n` +
-        `🤖 *IA Hoy:* ${topNews.slice(0, 80)}...\n\n` +
-        `🖥️ _Usa /health para ver el estado de tus 20 proyectos._`;
+      const fullBriefing = `💼 *BRIEFING EJECUTIVO - ${new Date().toLocaleDateString('es-ES')}*\n\n` +
+        `${divTable}\n` +
+        `${newsBlock}\n` +
+        `${trendBlock}\n` +
+        `📡 _Usa /health para auditoría de sistemas._`;
 
-      await sendTelegram(chatId, token, briefing, 'Markdown');
+      await sendTelegram(chatId, token, fullBriefing, 'Markdown');
     } catch (e) {
-      await sendTelegram(chatId, token, '❌ Error al generar el briefing diario.');
+      await sendTelegram(chatId, token, '❌ Error crítico en la agregación de datos para el briefing.');
     }
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /board_report (Informe Estratégico Semanal)
+  // COMANDO: /board_report (Informe Estratégico de Gestión)
   if (text === '/board_report' || text === '/boardreport') {
-    await sendTelegram(chatId, token, '📊 *Generando informe para la junta directiva...*');
+    await sendTelegram(chatId, token, '📊 *Consolidando métricas de gestión semanal...*');
     const gitToken = process.env.GITHUB_PAT;
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
     try {
-      // 1. Actividad de Git
-      const reposRes = await fetch('https://api.github.com/user/repos?per_page=5&sort=updated', {
+      // 1. Auditoría de Actividad (GitHub)
+      const reposRes = await fetch('https://api.github.com/user/repos?per_page=8&sort=updated', {
         headers: { 'Authorization': `token ${gitToken}` }
       });
       const repos = await reposRes.json();
-      let activitySummary = '';
+      let activityLog = '📈 *PRODUCTIVIDAD (GIT)*\n\`\`\`\n';
+      let totalCommits = 0;
       for (const repo of repos) {
         const cRes = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/commits?since=${sevenDaysAgo}`, {
           headers: { 'Authorization': `token ${gitToken}` }
         });
         const cData = await cRes.json();
         if (Array.isArray(cData) && cData.length > 0) {
-          activitySummary += `• *${repo.name}*: ${cData.length} cambios\n`;
+          activityLog += `${repo.name.slice(0, 12).padEnd(12)}: ${cData.length} upd\n`;
+          totalCommits += cData.length;
         }
       }
+      activityLog += `TOTAL SEMANA: ${totalCommits} cambios\n\`\`\``;
 
-      // 2. Framework Estratégico
-      const fw = ["Growth Hacking AARRR", "Matriz Eisenhower", "Ley de Brooks", "High Output Management"];
-      const selectedFw = fw[Math.floor(Math.random() * fw.length)];
+      // 2. Framework Estratégico (Mentoría)
+      const frameworks = [
+        { t: "Growth Hacking AARRR", d: "Mide Adquisición y Retención." },
+        { t: "Matriz Eisenhower", d: "Prioriza lo Importante vs Urgente." },
+        { t: "Ley de Brooks", d: "Más gente ≠ más velocidad." },
+        { t: "Ratio de Salida", d: "Tu producción es la de tu equipo." }
+      ];
+      const fw = frameworks[Math.floor(Math.random() * frameworks.length)];
 
-      const report = `🏛️ *BOARD REPORT - SEMANA ACTUAL*\n\n` +
-        `📈 *Productividad (GitHub):*\n${activitySummary || 'Sin cambios esta semana.'}\n` +
-        `🎯 *Foco Estratégico:* ${selectedFw}\n\n` +
-        `🔗 *Activos Digitales:* [vCard](${'https://hjalmarmeza.github.io/vcard/'}) | [Command Center](${"https://hjalmarmeza.github.io/Meza-Command-Center/"})\n\n` +
-        `_Reporte generado automáticamente para Hjalmar Meza._`;
+      const finalReport = `🏛️ *BOARD REPORT - SEMANA ACTUAL*\n\n` +
+        `${activityLog}\n\n` +
+        `🎯 *FOCO ESTRATÉGICO*\n*${fw.t}*\n└ ${fw.d}\n\n` +
+        `🖇️ *ACTIVOS CLAVE*\n• [vCard Interactiva](${"https://hjalmarmeza.github.io/vcard/"})\n• [Manual de Mando](${"https://hjalmarmeza.github.io/Meza-Command-Center/"})\n\n` +
+        `_Reporte oficial para la Dirección Ejecutiva._`;
 
-      await sendTelegram(chatId, token, report, 'Markdown');
+      await sendTelegram(chatId, token, finalReport, 'Markdown');
     } catch (e) {
-      await sendTelegram(chatId, token, '❌ Error al generar el informe estratégico.');
+      await sendTelegram(chatId, token, '❌ Error al consolidar el informe de junta.');
     }
     return res.status(200).send('OK');
   }
