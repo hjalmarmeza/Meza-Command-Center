@@ -219,20 +219,26 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /news
+  // COMANDO: /news (Noticias Reales)
   if (text === '/news') {
-    const queries = [
-      "Inteligencia+Artificial+Logistica",
-      "Innovacion+Transporte+Suministro",
-      "Logistica+4.0+Espana",
-      "Novedades+Supply+Chain+IA",
-      "Automatizacion+Robotica+Logistica"
-    ];
-    const query = queries[Math.floor(Math.random() * queries.length)];
-    const aiUrl = `https://news.google.com/search?q=${query}+when:24h&hl=es&gl=ES&ceid=ES:es`;
+    const queries = ["Inteligencia+Artificial", "Logistica+Espana", "Supply+Chain+Innovacion"];
+    const q = queries[Math.floor(Math.random() * queries.length)];
+    const rssUrl = `https://news.google.com/rss/search?q=${q}&hl=es&gl=ES&ceid=ES:es`;
     
-    const msg = `📰 *Radar de Innovación (Contenido Fresco)*\n\n📌 *Tema:* ${query.replace(/\+/g, ' ')}\n👉 [Ver Noticias en Español](${aiUrl})`;
-    await sendTelegram(chatId, token, msg, 'Markdown');
+    try {
+      const res = await fetch(rssUrl);
+      const xml = await res.text();
+      const titles = xml.match(/<title>(.*?)<\/title>/g)?.slice(2, 7) // Saltamos el título del canal
+        .map(t => t.replace(/<\/?title>/g, '').replace(/&quot;/g, '"')) || [];
+      
+      let msg = `📰 *Noticias de Ultima Hora*\n\n`;
+      titles.forEach(t => msg += `🔹 ${t}\n\n`);
+      msg += `_Más en:_ [Google News](https://news.google.com/search?q=${q}&hl=es)`;
+      
+      await sendTelegram(chatId, token, msg, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error al leer noticias.');
+    }
     return res.status(200).send('OK');
   }
 
@@ -310,13 +316,31 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /trends [País]
+  // COMANDO: /trends [País] (Extrae del RSS oficial)
   if (text.startsWith('/trends')) {
     const randomCountries = ['ES', 'MX', 'CO', 'PE', 'AR'];
     const country = text.replace('/trends', '').trim().toUpperCase() || randomCountries[Math.floor(Math.random() * randomCountries.length)];
-    
-    const trendsUrl = `https://trends.google.com/trends/trendingsearches/daily?geo=${country}&hl=es`;
-    await sendTelegram(chatId, token, `🔥 *Tendencias Globales (${country})*\n\n[Ver qué es viral hoy (Español)](${trendsUrl})\n\n_Cada vez que pulses este botón verás algo distinto._`, 'Markdown');
+    const rssUrl = `https://trends.google.com/trends/trendingsearches/daily/rss?geo=${country}`;
+
+    try {
+      const res = await fetch(rssUrl);
+      const xml = await res.text();
+      
+      // Extracción simple de Título y Tráfico usando Regex (Sin librerías para mantener Costo 0 y Rapidez)
+      const items = xml.match(/<item>([\s\S]*?)<\/item>/g)?.slice(0, 10) || [];
+      let trendsMsg = `🔥 *Tendencias en ${country}*\n\n`;
+      
+      items.forEach(item => {
+        const title = item.match(/<title>(.*?)<\/title>/)?.[1] || 'Sin título';
+        const traffic = item.match(/<ht:approx_traffic>(.*?)<\/ht:approx_traffic>/)?.[1] || 'N/A';
+        trendsMsg += `📈 *${title}* (${traffic})\n`;
+      });
+
+      trendsMsg += `\n_Fuente: Google Trends RSS_`;
+      await sendTelegram(chatId, token, trendsMsg, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, `❌ Error al obtener tendencias de ${country}.`);
+    }
     return res.status(200).send('OK');
   }
 
