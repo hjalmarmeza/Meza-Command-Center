@@ -132,6 +132,38 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
+  // COMANDO: /health (Estado de servidores)
+  if (text === '/health') {
+    const urls = [
+      { name: 'CV Interactivo', url: 'https://hjalmarmeza.github.io/CV_01_Web_Interactivo/' },
+      { name: 'VCard Contacto', url: 'https://hjalmarmeza.github.io/CV_02_VCard_Contacto/' },
+      { name: 'QR Identity', url: 'https://hjalmarmeza.github.io/CV_03_QR_Identity/' },
+      { name: 'Linkedinmatic', url: 'https://hjalmarmeza.github.io/Linkedinmatic/' },
+      { name: 'Talk.Me', url: 'https://hjalmarmeza.github.io/Talk.Me/' },
+      { name: 'Vigilante', url: 'https://hjalmarmeza.github.io/Vigilante_Privacidad/' },
+      { name: 'Loom Port', url: 'https://hjalmarmeza.github.io/Loom/' },
+      { name: 'Command Center', url: 'https://meza-command-center.vercel.app' },
+      { name: 'CV Carlos', url: 'https://hjalmarmeza.github.io/CV-Carlos/' }
+    ];
+
+    await sendTelegram(chatId, token, '📡 *Escaneando estado de tus 20 proyectos...*', 'Markdown');
+
+    let healthReport = '🖥️ *Health Check Global*\n\n';
+    
+    for (const site of urls) {
+      try {
+        const res = await fetch(site.url, { method: 'HEAD' });
+        const icon = res.ok ? '🟢' : '🔴';
+        healthReport += `${icon} *${site.name}* (${res.status})\n`;
+      } catch (e) {
+        healthReport += `🔴 *${site.name}* (Offline)\n`;
+      }
+    }
+
+    await sendTelegram(chatId, token, healthReport, 'Markdown');
+    return res.status(200).send('OK');
+  }
+
   // Fallback para comandos no reconocidos
   if (text.startsWith('/')) {
     await sendTelegram(chatId, token, 'Comando no reconocido todavía. Estamos activando los módulos uno a uno. Prueba con /comandos.');
