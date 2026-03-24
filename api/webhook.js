@@ -221,23 +221,33 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
 
   // COMANDO: /news (Noticias Reales)
   if (text === '/news') {
-    const queries = ["Inteligencia+Artificial", "Logistica+Espana", "Supply+Chain+Innovacion"];
+    const queries = ["Inteligencia+Artificial", "Logística+E-commerce", "Supply+Chain+Innovacion", "Tecnología+Logística", "Automatización+Empresarial"];
     const q = queries[Math.floor(Math.random() * queries.length)];
     const rssUrl = `https://news.google.com/rss/search?q=${q}&hl=es&gl=ES&ceid=ES:es`;
     
     try {
       const res = await fetch(rssUrl);
       const xml = await res.text();
-      const titles = xml.match(/<title>(.*?)<\/title>/g)?.slice(2, 7) // Saltamos el título del canal
-        .map(t => t.replace(/<\/?title>/g, '').replace(/&quot;/g, '"')) || [];
+      // Regex mejorado para capturar ítems de forma más robusta
+      const items = xml.match(/<item>([\s\S]*?)<\/item>/g)?.slice(0, 5) || [];
       
-      let msg = `📰 *Noticias de Ultima Hora*\n\n`;
-      titles.forEach(t => msg += `🔹 ${t}\n\n`);
-      msg += `_Más en:_ [Google News](https://news.google.com/search?q=${q}&hl=es)`;
+      let msg = `📰 *Radar de Innovación (${q.replace(/\+/g, ' ')})*\n\n`;
       
+      items.forEach(item => {
+        const titleMatch = item.match(/<title>(.*?)<\/title>/);
+        const linkMatch = item.match(/<link>(.*?)<\/link>/);
+        
+        if (titleMatch) {
+          const title = titleMatch[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+          const link = linkMatch ? linkMatch[1] : 'https://news.google.com';
+          msg += `🔹 [${title}](${link})\n\n`;
+        }
+      });
+      
+      msg += `_Fuente: Google News (Localización: ES)_`;
       await sendTelegram(chatId, token, msg, 'Markdown');
     } catch (e) {
-      await sendTelegram(chatId, token, '❌ Error al leer noticias.');
+      await sendTelegram(chatId, token, '❌ Error al sincronizar con el radar de noticias.');
     }
     return res.status(200).send('OK');
   }
@@ -318,40 +328,53 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
 
   // COMANDO: /trends [País] (Extrae del RSS oficial)
   if (text.startsWith('/trends')) {
-    const randomCountries = ['ES', 'MX', 'CO', 'PE', 'AR'];
+    const randomCountries = ['ES', 'MX', 'CO', 'PE', 'AR', 'US'];
     let input = text.replace('/trends', '').trim().toUpperCase();
     
-    // Mapeo de nombres comunes a ISO 3166-1 alpha-2
+    // Mapeo exhaustivo de nombres comunes a ISO 3166-1 alpha-2
     const isoMap = {
-      'PERU': 'PE', 'PERÚ': 'PE', 'ESPAÑA': 'ES', 'ESPANA': 'ES', 
-      'MEXICO': 'MX', 'MÉXICO': 'MX', 'COLOMBIA': 'CO', 'ARGENTINA': 'AR',
-      'CHILE': 'CL', 'ECUADOR': 'EC', 'VENEZUELA': 'VE', 'PANAMA': 'PA'
+      'PERU': 'PE', 'PERÚ': 'PE', 'ESPAÑA': 'ES', 'ESPANA': 'ES', 'SPAIN': 'ES',
+      'MEXICO': 'MX', 'MÉXICO': 'MX', 'COLOMBIA': 'CO', 'ARGENTINA': 'AR', 'ARG': 'AR',
+      'CHILE': 'CL', 'ECUADOR': 'EC', 'VENEZUELA': 'VE', 'PANAMA': 'PA', 'PANAMÁ': 'PA',
+      'EEUU': 'US', 'USA': 'US', 'ESTADOS UNIDOS': 'US', 'URUGUAY': 'UY', 'GLOBAL': 'US'
     };
     
-    const country = isoMap[input] || (input.length === 2 ? input : randomCountries[Math.floor(Math.random() * randomCountries.length)]);
-    const rssUrl = `https://trends.google.com/trends/trendingsearches/daily/rss?geo=${country}`;
+    const countryCode = isoMap[input] || (input.length === 2 ? input : randomCountries[Math.floor(Math.random() * randomCountries.length)]);
+    const rssUrl = `https://trends.google.com/trending/rss?geo=${countryCode}`;
 
     try {
-      const res = await fetch(rssUrl);
+      // Añadimos User-Agent para evitar bloqueos por parte de Google
+      const res = await fetch(rssUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
       const xml = await res.text();
       
-      const items = xml.match(/<item>([\s\S]*?)<\/item>/g)?.slice(0, 10) || [];
+      // Parsing más robusto: buscamos <item> ignorando mayúsculas/minúsculas y espacios
+      const items = xml.match(/<item>[\s\S]*?<\/item>/gi)?.slice(0, 10) || [];
+      
       if (items.length === 0) {
-        await sendTelegram(chatId, token, `⚠️ No hay tendencias activas en ${country} ahora mismo.`);
+        await sendTelegram(chatId, token, `⚠️ No se detectaron tendencias para *${countryCode}*. Google podría estar limitando el acceso temporalmente.`, 'Markdown');
         return res.status(200).send('OK');
       }
 
-      let trendsMsg = `🔥 *Tendencias en ${country}*\n\n`;
+      let trendsMsg = `🔥 *Tendencias: ${countryCode}*\n\n`;
       items.forEach(item => {
-        const title = item.match(/<title>(.*?)<\/title>/)?.[1] || 'Sin título';
-        const traffic = item.match(/<ht:approx_traffic>(.*?)<\/ht:approx_traffic>/)?.[1] || 'N/A';
-        trendsMsg += `📈 *${title}* (${traffic})\n`;
+        const titleMatch = item.match(/<title>(.*?)<\/title>/i);
+        const trafficMatch = item.match(/<ht:approx_traffic>(.*?)<\/ht:approx_traffic>/i);
+        
+        if (titleMatch) {
+          const title = titleMatch[1].replace('<![CDATA[', '').replace(']]>', '');
+          const traffic = trafficMatch ? trafficMatch[1] : 'Directo';
+          trendsMsg += `📈 *${title}* (+${traffic})\n`;
+        }
       });
 
       trendsMsg += `\n_Fuente: Google Trends RSS_`;
       await sendTelegram(chatId, token, trendsMsg, 'Markdown');
     } catch (e) {
-      await sendTelegram(chatId, token, `❌ Error al obtener tendencias de ${country}.`);
+      await sendTelegram(chatId, token, `❌ Error de enlace con el satélite de tendencias (${countryCode}).`);
     }
     return res.status(200).send('OK');
   }
