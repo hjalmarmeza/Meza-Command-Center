@@ -221,8 +221,17 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
 
   // COMANDO: /news
   if (text === '/news') {
-    const aiUrl = `https://news.google.com/search?q=Inteligencia+Artificial+Logistica+when:24h&hl=es-419&gl=ES&ceid=ES:es`;
-    const msg = `📰 *Radar de Innovación (24h - Español)*\n\n- [Noticias de IA y Logística](${aiUrl})\n\n_Resultados filtrados en tu idioma._`;
+    const queries = [
+      "Inteligencia+Artificial+Logistica",
+      "Innovacion+Transporte+Suministro",
+      "Logistica+4.0+Espana",
+      "Novedades+Supply+Chain+IA",
+      "Automatizacion+Robotica+Logistica"
+    ];
+    const query = queries[Math.floor(Math.random() * queries.length)];
+    const aiUrl = `https://news.google.com/search?q=${query}+when:24h&hl=es&gl=ES&ceid=ES:es`;
+    
+    const msg = `📰 *Radar de Innovación (Contenido Fresco)*\n\n📌 *Tema:* ${query.replace(/\+/g, ' ')}\n👉 [Ver Noticias en Español](${aiUrl})`;
     await sendTelegram(chatId, token, msg, 'Markdown');
     return res.status(200).send('OK');
   }
@@ -301,11 +310,13 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /trends [País] (ej: ES, MX, CO)
+  // COMANDO: /trends [País]
   if (text.startsWith('/trends')) {
-    const country = text.replace('/trends', '').trim().toUpperCase() || 'ES';
-    const trendsUrl = `https://trends.google.com/trends/trendingsearches/daily?geo=${country}&hl=es-419`;
-    await sendTelegram(chatId, token, `🔥 *Tendencias del día (${country} - Español)*\n\n[Ver qué es viral hoy](${trendsUrl})`, 'Markdown');
+    const randomCountries = ['ES', 'MX', 'CO', 'PE', 'AR'];
+    const country = text.replace('/trends', '').trim().toUpperCase() || randomCountries[Math.floor(Math.random() * randomCountries.length)];
+    
+    const trendsUrl = `https://trends.google.com/trends/trendingsearches/daily?geo=${country}&hl=es`;
+    await sendTelegram(chatId, token, `🔥 *Tendencias Globales (${country})*\n\n[Ver qué es viral hoy (Español)](${trendsUrl})\n\n_Cada vez que pulses este botón verás algo distinto._`, 'Markdown');
     return res.status(200).send('OK');
   }
 
