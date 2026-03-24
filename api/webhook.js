@@ -5,6 +5,7 @@ export default async function handler(req, res) {
 
   const { message } = req.body;
   const token = process.env.TELEGRAM_BOT_TOKEN;
+  const ALLOWED_CHAT_ID = 7823163854; // ID de Hjalmar Meza
 
   // Si no hay mensaje o token, salimos
   if (!message || !token) {
@@ -13,6 +14,12 @@ export default async function handler(req, res) {
 
   const chatId = message.chat.id;
   const text = message.text || '';
+
+  // Bloqueo de seguridad: Solo Hjalmar puede usar el bot
+  if (chatId !== ALLOWED_CHAT_ID) {
+    await sendTelegram(chatId, token, 'Acceso Denegado. Este sistema es privado y solo responde al Administrador.');
+    return res.status(200).send('OK');
+  }
 
   // Comando de Inicio
   if (text === '/start') {
