@@ -86,9 +86,8 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       });
       const repos = await reposResponse.json();
 
-      let report = '📈 *Reporte de Tráfico (Últimos 14 días)*\n\n';
+      let report = '📈 *Actividad por Repositorio*\n\n';
       
-      // Consultamos los 10 más recientes para no saturar el tiempo de Vercel
       for (const repo of repos.slice(0, 10)) {
         const viewsResponse = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/traffic/views`, {
           headers: { 'Authorization': `token ${gitToken}` }
@@ -97,10 +96,10 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
         const totalViews = viewsData.count || 0;
         const uniqueVisitors = viewsData.uniques || 0;
 
-        report += `📁 *${repo.name}*\n👁️ Vistas: ${totalViews} | 👤 Únicos: ${uniqueVisitors}\n\n`;
+        report += `📁 *${repo.name}*\n👁️ Cod: ${totalViews} | 👤 Únicos: ${uniqueVisitors}\n\n`;
       }
 
-      await sendTelegram(chatId, token, report, 'Markdown');
+      await sendTelegram(chatId, token, report + '_Nota: Estas son visitas a tu código, no a la web._', 'Markdown');
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error al consultar GitHub.');
     }
@@ -172,6 +171,56 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     }
 
     await sendTelegram(chatId, token, healthReport, 'Markdown');
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /git (Actividad Semanal)
+  if (text === '/git') {
+    const gitToken = process.env.GITHUB_PAT;
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    
+    try {
+      const reposResponse = await fetch('https://api.github.com/user/repos?per_page=10&sort=updated', {
+        headers: { 'Authorization': `token ${gitToken}` }
+      });
+      const repos = await reposResponse.json();
+      
+      let gitMsg = '💻 *Pulso de Código (7 días)*\n\n';
+      for (const repo of repos.slice(0, 5)) {
+        const commitsRes = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/commits?since=${sevenDaysAgo}`, {
+          headers: { 'Authorization': `token ${gitToken}` }
+        });
+        const commits = await commitsRes.json();
+        const count = Array.isArray(commits) ? commits.length : 0;
+        gitMsg += `🔹 *${repo.name}*: ${count} commits\n`;
+      }
+      await sendTelegram(chatId, token, gitMsg, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error al consultar actividad Git.');
+    }
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /divisas
+  if (text === '/divisas') {
+    try {
+      const resEur = await fetch('https://api.exchangerate-api.com/v4/latest/EUR');
+      const data = await resEur.json();
+      const usd = data.rates.USD;
+      const cop = data.rates.COP;
+      const msg = `💱 *Mercado de Divisas*\n\n1 EUR ➡️ *${usd}* USD\n1 EUR ➡️ *${cop}* COP\n\n_Actualizado al instante (Costo 0)_`;
+      await sendTelegram(chatId, token, msg, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error al consultar divisas.');
+    }
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /news
+  if (text === '/news') {
+    const aiUrl = `https://news.google.com/search?q=Inteligencia+Artificial+Logistica+after:1d&hl=es`;
+    const msg = `📰 *Radar de Innovación (Últimas 24h)*\n\n- [Noticias de IA y Logística](${aiUrl})`;
+    await sendTelegram(chatId, token, msg, 'Markdown');
     return res.status(200).send('OK');
   }
 
