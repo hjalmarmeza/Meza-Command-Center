@@ -29,6 +29,7 @@ export default async function handler(req, res) {
 
   // Menú de Comandos (Guía Maestra)
   if (text === '/comandos') {
+    // ... (ayuda omitida por brevedad en este chunk)
     const helpMenu = `🤖 *Guía de Mando - Meza Command Center*
 
 *📊 Monitoreo y Salud*
@@ -64,8 +65,70 @@ export default async function handler(req, res) {
 
 ---
 _Escribe /comandos en cualquier momento para volver aquí_`;
-
     await sendTelegram(chatId, token, helpMenu, 'Markdown');
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /stats (Tráfico GitHub)
+  if (text === '/stats') {
+    const gitToken = process.env.GITHUB_PAT;
+    if (!gitToken) {
+      await sendTelegram(chatId, token, '⚠️ Falta configurar el GITHUB_PAT en Vercel.');
+      return res.status(200).send('OK');
+    }
+
+    await sendTelegram(chatId, token, '🔍 Consultando tus repositorios... (esto puede tardar unos segundos)');
+
+    try {
+      // 1. Obtener lista de repositorios
+      const reposResponse = await fetch('https://api.github.com/user/repos?per_page=30&sort=updated', {
+        headers: { 'Authorization': `token ${gitToken}` }
+      });
+      const repos = await reposResponse.json();
+
+      let report = '📈 *Reporte de Tráfico (Últimos 14 días)*\n\n';
+      
+      // Consultamos los 10 más recientes para no saturar el tiempo de Vercel
+      for (const repo of repos.slice(0, 10)) {
+        const viewsResponse = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/traffic/views`, {
+          headers: { 'Authorization': `token ${gitToken}` }
+        });
+        const viewsData = await viewsResponse.json();
+        const totalViews = viewsData.count || 0;
+        const uniqueVisitors = viewsData.uniques || 0;
+
+        report += `📁 *${repo.name}*\n👁️ Vistas: ${totalViews} | 👤 Únicos: ${uniqueVisitors}\n\n`;
+      }
+
+      await sendTelegram(chatId, token, report, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error al consultar GitHub.');
+    }
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /research [Query]
+  if (text.startsWith('/research')) {
+    const query = text.replace('/research', '').trim();
+    if (!query) {
+      await sendTelegram(chatId, token, 'Uso: `/research NombreEmpresa` o `/research Cargo`');
+      return res.status(200).send('OK');
+    }
+    const searchUrl = `https://www.google.com/search?q=site:linkedin.com/in+OR+site:linkedin.com/company+"${encodeURIComponent(query)}"`;
+    await sendTelegram(chatId, token, `🔍 *Buscando leads y directivos:* [Resultados aquí](${searchUrl})`, 'Markdown');
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /jobs [Puesto]
+  if (text.startsWith('/jobs')) {
+    const query = text.replace('/jobs', '').trim();
+    if (!query) {
+      await sendTelegram(chatId, token, 'Uso: `/jobs Desarrollador` o `/jobs Director`');
+      return res.status(200).send('OK');
+    }
+    // Buscamos ofertas en LinkedIn publicadas en el último mes
+    const searchUrl = `https://www.google.com/search?q=site:linkedin.com/jobs+"${encodeURIComponent(query)}"+after:2026-03-01`;
+    await sendTelegram(chatId, token, `💼 *Buscando vacantes estratégicas:* [Ver ofertas hoy](${searchUrl})`, 'Markdown');
     return res.status(200).send('OK');
   }
 
