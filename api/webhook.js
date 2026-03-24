@@ -282,6 +282,21 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
+  // COMANDO: /id
+  if (text === '/id') {
+    const vcardUrl = 'https://hjalmarmeza.github.io/vcard/';
+    await sendTelegram(chatId, token, `🪪 *Tu Tarjeta Digital Interactiva*\n\n[Ver vCard de Hjalmar Meza](${vcardUrl})`, 'Markdown');
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /trends [País] (ej: ES, MX, CO)
+  if (text.startsWith('/trends')) {
+    const country = text.replace('/trends', '').trim().toUpperCase() || 'ES';
+    const trendsUrl = `https://trends.google.com/trends/trendingsearches/daily?geo=${country}&hl=es`;
+    await sendTelegram(chatId, token, `🔥 *Tendencias del día (${country})*\n\n[Ver qué es viral hoy](${trendsUrl})`, 'Markdown');
+    return res.status(200).send('OK');
+  }
+
   // Fallback para comandos no reconocidos
   if (text.startsWith('/')) {
     await sendTelegram(chatId, token, 'Comando no reconocido todavía. Estamos activando los módulos uno a uno. Prueba con /comandos.');
