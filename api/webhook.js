@@ -174,19 +174,31 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /git (Reporte de Actividad Real)
+  // COMANDO: /git (Reporte de Actividad en Español)
   if (text === '/git') {
     const gitToken = process.env.GITHUB_PAT;
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     
+    // Función para traducir términos técnicos comunes
+    const traducirCommit = (msg) => {
+      let m = msg.toLowerCase();
+      if (m.includes('fix')) return '🔧 Corrección';
+      if (m.includes('feat') || m.includes('add')) return '✨ Nueva función';
+      if (m.includes('style') || m.includes('ui')) return '🎨 Diseño/UI';
+      if (m.includes('refactor')) return '♻️ Optimización';
+      if (m.includes('update')) return '📝 Actualización';
+      if (m.includes('enhance')) return '🚀 Mejora';
+      if (m.includes('security')) return '🔐 Seguridad';
+      return '🔹 Cambio';
+    };
+
     try {
-      // Obtenemos los 10 repositorios actualizados más recientemente
       const reposResponse = await fetch('https://api.github.com/user/repos?per_page=10&sort=updated', {
         headers: { 'Authorization': `token ${gitToken}` }
       });
       const repos = await reposResponse.json();
       
-      let gitMsg = '💻 *Historial de Cambios (Últimos 7 días)*\n\n';
+      let gitMsg = '📊 *Resumen de Actividad (7 días)*\n\n';
       let foundActivity = false;
 
       for (const repo of repos) {
@@ -197,23 +209,27 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
         
         if (Array.isArray(commits) && commits.length > 0) {
           foundActivity = true;
-          gitMsg += `📁 *${repo.name}* (${commits.length})\n`;
-          // Listamos los últimos 2 commits de cada repo para no saturar el mensaje
+          // Nombre del proyecto simplificado
+          const projectName = repo.name.replace(/-/g, ' ').toUpperCase();
+          gitMsg += `📂 *${projectName}*\n`;
+          
           commits.slice(0, 2).forEach(c => {
-            const date = new Date(c.commit.author.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
-            gitMsg += ` └─ 🕒 ${date}: ${c.commit.message.split('\n')[0].slice(0, 50)}\n`;
+            const label = traducirCommit(c.commit.message);
+            const rawMsg = c.commit.message.split('\n')[0].split(':').pop().trim();
+            const cleanMsg = rawMsg.charAt(0).toUpperCase() + rawMsg.slice(1, 40);
+            gitMsg += `  ${label}: ${cleanMsg}...\n`;
           });
           gitMsg += `\n`;
         }
       }
 
       if (!foundActivity) {
-        gitMsg = '💤 *Sin actividad reciente* en los últimos 7 días. ¡Es hora de codear!';
+        gitMsg = '💤 *Sin actividad* esta semana. Todo bajo control.';
       }
 
       await sendTelegram(chatId, token, gitMsg, 'Markdown');
     } catch (e) {
-      await sendTelegram(chatId, token, '❌ Error al sincronizar con el servidor de GitHub.');
+      await sendTelegram(chatId, token, '❌ Error al conectar con el servidor de código.');
     }
     return res.status(200).send('OK');
   }
