@@ -174,29 +174,46 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /git (Actividad Semanal)
+  // COMANDO: /git (Reporte de Actividad Real)
   if (text === '/git') {
     const gitToken = process.env.GITHUB_PAT;
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     
     try {
+      // Obtenemos los 10 repositorios actualizados más recientemente
       const reposResponse = await fetch('https://api.github.com/user/repos?per_page=10&sort=updated', {
         headers: { 'Authorization': `token ${gitToken}` }
       });
       const repos = await reposResponse.json();
       
-      let gitMsg = '💻 *Pulso de Código (7 días)*\n\n';
-      for (const repo of repos.slice(0, 5)) {
+      let gitMsg = '💻 *Historial de Cambios (Últimos 7 días)*\n\n';
+      let foundActivity = false;
+
+      for (const repo of repos) {
         const commitsRes = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/commits?since=${sevenDaysAgo}`, {
           headers: { 'Authorization': `token ${gitToken}` }
         });
         const commits = await commitsRes.json();
-        const count = Array.isArray(commits) ? commits.length : 0;
-        gitMsg += `🔹 *${repo.name}*: ${count} commits\n`;
+        
+        if (Array.isArray(commits) && commits.length > 0) {
+          foundActivity = true;
+          gitMsg += `📁 *${repo.name}* (${commits.length})\n`;
+          // Listamos los últimos 2 commits de cada repo para no saturar el mensaje
+          commits.slice(0, 2).forEach(c => {
+            const date = new Date(c.commit.author.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+            gitMsg += ` └─ 🕒 ${date}: ${c.commit.message.split('\n')[0].slice(0, 50)}\n`;
+          });
+          gitMsg += `\n`;
+        }
       }
+
+      if (!foundActivity) {
+        gitMsg = '💤 *Sin actividad reciente* en los últimos 7 días. ¡Es hora de codear!';
+      }
+
       await sendTelegram(chatId, token, gitMsg, 'Markdown');
     } catch (e) {
-      await sendTelegram(chatId, token, '❌ Error al consultar actividad Git.');
+      await sendTelegram(chatId, token, '❌ Error al sincronizar con el servidor de GitHub.');
     }
     return res.status(200).send('OK');
   }
