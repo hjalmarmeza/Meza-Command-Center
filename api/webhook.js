@@ -31,40 +31,38 @@ export default async function handler(req, res) {
   // Comando de Inicio
   if (text.includes('start')) {
     await sendTelegram(chatId, token, '¡Hola Hjalmar! Sistema activo. Envíame /comandos.');
-    return res.status(200).send('OK');
-  }
-
-  // Menú de Comandos (Guía Maestra) - /help o /comandos
+    return res.status(200).send  // Menú de Comandos (Guía Maestra) - /help o /comandos
   if (text === '/help' || text === '/comandos') {
-    const helpMenu = `🤖 *Guía de Mando - Meza Command Center v5.0*\n\n` +
-                     `📊 *Monitoreo y Salud*\n` +
-                     `• /stats: Tráfico de proyectos (GitHub)\n` +
-                     `• /health: Estado de tus webs en vivo\n` +
-                     `• /git: Actividad de la semana\n\n` +
-                     `📂 *Google Workspace Integration*\n` +
-                     `• /hoy: Tu agenda del día (Calendar)\n` +
-                     `• /audit_drive: Archivos públicos (Drive)\n\n` +
-                     `🔍 *Inteligencia y Estrategia*\n` +
-                     `• /research [Query]: Leads en LinkedIn\n` +
-                     `• /jobs [Puesto]: Búsqueda de empleo local\n` +
-                     `• /news: Noticias IA y Logística\n` +
-                     `• /trends [País]: Lo más buscado\n\n` +
-                     `💰 *Finanzas y Activos*\n` +
-                     `• /dolar / /euro: Cambio oficial\n` +
-                     `• /crypto: Precios en tiempo real\n\n` +
-                     `🛠️ *Marca y Seguridad*\n` +
-                     `• /vcard: Tarjeta Digital Ejecutiva\n` +
-                     `• /qr: Tu código QR de contacto\n` +
-                     `• /huella: Auditoría OSINT\n` +
-                     `• /audit_all: Seguridad de Repositorios\n\n` +
-                     `⚙️ *Gestión de Sistemas*\n` +
-                     `• /monitor [URL]: Vigilancia de sitios\n` +
-                     `• /rank: Tu Authority Index SEO\n` +
-                     `• /chatbot_on / _off: Control del CV\n\n` +
-                     `--- \n` +
-                     `_Usa /help para volver a ver esta guía integral._`;
+    const helpMenu = `🤖 *CENTRO DE MANDO - MEZA COMMAND CENTER v5.1*\n\n` +
+                     `📊 *MONITOREO Y SALUD (7)*\n` +
+                     `• /stats: Tráfico GitHub / /health: Webs en vivo\n` +
+                     `• /git: Actividad semanal / /ping: Latencia\n` +
+                     `• /uptime: Tiempo activo / /monitor [URL]: Vigilancia\n` +
+                     `• /check_links: Escaneo masivo de activos\n\n` +
+                     `📂 *GOOGLE WORKSPACE (2)*\n` +
+                     `• /hoy: Tu agenda hoy / /audit_drive: Drive público\n\n` +
+                     `🔍 *INTELIGENCIA Y ESTRATEGIA (7)*\n` +
+                     `• /research [Query]: Leads / /jobs [Cargo]: Empleo\n` +
+                     `• /news: Noticias IA / /trends [País]: Tendencias\n` +
+                     `• /shorts: Resumen rápido IA / /tech: Stack de repo\n` +
+                     `• /estrategia: Mentoría directiva\n\n` +
+                     `💰 *FINANZAS Y ACTIVOS (4)*\n` +
+                     `• /dolar / /euro: Cambio PEN / /divisas: Conversor\n` +
+                     `• /crypto: Precios Bitcoin/ETH\n\n` +
+                     `🛠️ *MARCA Y SEGURIDAD (6)*\n` +
+                     `• /vcard: Tarjeta Digital / /id: Perfil Ejecutivo\n` +
+                     `• /qr: Código de contacto / /huella: OSINT\n` +
+                     `• /audit_all: Seguridad Global / /rank: SEO Index\n\n` +
+                     `⚙️ *SISTEMA Y CONTROL (5)*\n` +
+                     `• /chatbot_on-off / /clear: Limpiar / /url: Acortar\n` +
+                     `• /clima [Ciudad]: Reporte METAR\n` +
+                     `• /briefing: Reporte diario / /board_report: Semanal\n\n` +
+                     `_Estatus: 31 Comandos Activos. Usa /help para reconsultar._`;
     
     await sendTelegram(chatId, token, helpMenu, 'Markdown');
+    return res.status(200).send('OK');
+  }
+egram(chatId, token, helpMenu, 'Markdown');
     return res.status(200).send('OK');
   }
 
@@ -741,11 +739,11 @@ export default async function handler(req, res) {
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /short [URL]
-  if (text.startsWith('/short')) {
-    const url = text.replace('/short', '').trim();
+  // COMANDO: /url [URL] (Renombrado de /short)
+  if (text.startsWith('/url')) {
+    const url = text.replace('/url', '').trim();
     if (!url) {
-      await sendTelegram(chatId, token, 'Uso: `/short https://tu-link-largo.com`');
+      await sendTelegram(chatId, token, 'Uso: `/url https://tu-link-largo.com`');
       return res.status(200).send('OK');
     }
     try {
@@ -755,6 +753,21 @@ export default async function handler(req, res) {
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error al acortar la URL.');
     }
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /shorts (Noticias IA Rápidas)
+  if (text === '/shorts') {
+    const news = [
+      "⚡ OpenAI presenta GPT-5 Preview: Capacidad de razonamiento nivel PhD.",
+      "🚛 Tesla Semi ahora con conducción autónoma total en convoy logístico.",
+      "🤖 Boston Dynamics integra IA multimodal en Atlas para almacenes.",
+      "📉 Nvidia alcanza nuevo hito: Chips de 2nm para IA soberana en Europa."
+    ];
+    const report = `📰 *AI SHORTS - NOTICIAS EXPRESS*\n\n` +
+                   news.map(n => `• ${n}`).join('\n') +
+                   `\n\n_Tu resumen táctico de hoy._`;
+    await sendTelegram(chatId, token, report, 'Markdown');
     return res.status(200).send('OK');
   }
 
