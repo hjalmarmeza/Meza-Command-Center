@@ -711,7 +711,7 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
                        `🔍 *REPUTACIÓN ONLINE*\n` +
                        `└ [Google Search](https://www.google.com/search?q="${encodeURIComponent(targetName)}")\n` +
                        `└ [GitHub Profile](${userData.html_url})`;
-        await sendTelegram(chatId, token, report, 'Markdown');
+        await sendTelegram(chatId, token, report, 'Markdown', true);
       } else {
         // --- RASTREO OSINT EXTERNO (Cualquier Persona) ---
         const googleUrl = `https://www.google.com/search?q="${encodeURIComponent(targetName)}"`;
@@ -729,7 +729,7 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
                          `└ [Rastreo en Google](${googleUrl})\n` +
                          `└ [Directorio de LinkedIn](${linkedinUrl})\n\n` +
                          `_Búsqueda realizada bajo parámetros de reputación profesional._`;
-        await sendTelegram(chatId, token, osintMsg, 'Markdown');
+        await sendTelegram(chatId, token, osintMsg, 'Markdown', true);
       }
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error en la auditoría digital.');
