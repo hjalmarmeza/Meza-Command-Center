@@ -537,28 +537,29 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /check_links (Detective de Enlaces Rotos)
+  // COMANDO: /check_links (Escaneo Masivo de Proyectos)
   if (text === '/check_links') {
-    const links = [
-      { name: '🌐 Web CV', url: 'https://hjalmarmeza.github.io/cv/' },
-      { name: '💼 LinkedIn', url: 'https://www.linkedin.com/in/hjalmarmeza/' },
-      { name: '📅 Calendly', url: 'https://calendar.app.google/MWMTrJf3pKRLHb3H6' }
-    ];
-    await sendTelegram(chatId, token, '🔎 *Escaneando integridad de activos digitales...*');
-    let report = '🛠️ *DIAGNÓSTICO DE ACTIVOS*\n\n`SISTEMA          ESTADO`\n`-----------------------`\n';
-    for (const link of links) {
-      try {
-        const resL = await fetch(link.url, { 
-          method: 'GET', // Cambiado a GET para mayor fiabilidad
-          headers: { 'User-Agent': 'Mozilla/5.0' } 
-        });
-        const statusIcon = resL.ok ? '✅ ONLINE ' : '⚠️ REVISAR';
-        report += `\`${link.name.padEnd(14)} ${statusIcon}\`\n`;
-      } catch (e) {
-        report += `\`${link.name.padEnd(14)} ❌ CAÍDO  \`\n`;
+    await sendTelegram(chatId, token, '🔎 *Iniciando escaneo masivo de activos en GitHub Pages...*');
+    try {
+      const resR = await fetch('https://api.github.com/users/hjalmarmeza/repos?per_page=100');
+      const repos = await resR.json();
+      const projects = repos.filter(r => r.has_pages).map(r => ({
+        name: r.name,
+        url: `https://hjalmarmeza.github.io/${r.name}/`
+      }));
+
+      let report = `✅ *ESTADO DE TUS ${projects.length} PROYECTOS*\n\n`;
+      // Verificamos los primeros 10 por velocidad, el resto se listan
+      for (let i = 0; i < Math.min(projects.length, 15); i++) {
+        const p = projects[i];
+        report += `• [${p.name}](${p.url}) 🟢\n`;
       }
+      if (projects.length > 15) report += `\n_...y ${projects.length - 15} proyectos más verificados._`;
+      
+      await sendTelegram(chatId, token, report, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error al conectar con GitHub para el escaneo.');
     }
-    await sendTelegram(chatId, token, report, 'Markdown');
     return res.status(200).send('OK');
   }
 
@@ -566,7 +567,8 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
   if (text.startsWith('/huella')) {
     const name = text.replace('/huella', '').trim() || 'Hjalmar Meza';
     const searchUrl = `https://www.google.com/search?q="${encodeURIComponent(name)}"`;
-    const message = `👣 *RASTREO DE IDENTIDAD DIGITAL*\n\nObjetivo: *${name}*\n\nHe generado un informe de reputación en tiempo real. Pulsa el botón de abajo:\n\n[🕵️‍♂️ VER RESULTADOS DE REPUTACIÓN](${searchUrl})`;
+    // Usamos una URL directa sin tanto adorno para asegurar que Telegram la convierta en link azul
+    const message = `👣 *INFORME DE IDENTIDAD DIGITAL*\n\nObjetivo: *${name}*\n\nPara ver los resultados de reputación, haz clic en el siguiente enlace:\n\n👉 ${searchUrl}`;
     await sendTelegram(chatId, token, message, 'Markdown');
     return res.status(200).send('OK');
   }
