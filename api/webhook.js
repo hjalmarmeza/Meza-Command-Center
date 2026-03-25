@@ -34,9 +34,11 @@ export default async function handler(req, res) {
     return res.status(200).send('OK');
   }
 
-  // Menú de Comandos (Guía Maestra) - /help o /comandos
-  if (text === '/help' || text === '/comandos') {
-    const helpMenu = `🤖 *CENTRO DE MANDO - MEZA COMMAND CENTER v5.1*\n\n` +
+  // ================================================================
+  // MENÚ MAESTRO DE CONTROL (Prioridad Máxima)
+  // ================================================================
+  if (text === '/help' || text === '/comandos' || text === 'ayuda' || text === 'help') {
+    const helpMenu = `🤖 *CENTRO DE MANDO - MEZA COMMAND CENTER v5.3*\n\n` +
                      `📊 *MONITOREO Y SALUD (7)*\n` +
                      `• /stats: Tráfico GitHub / /health: Webs en vivo\n` +
                      `• /git: Actividad semanal / /ping: Latencia\n` +
@@ -57,10 +59,10 @@ export default async function handler(req, res) {
                      `• /qr: Código de contacto / /huella: OSINT\n` +
                      `• /audit_all: Seguridad Global / /rank: SEO Index\n\n` +
                      `⚙️ *SISTEMA Y CONTROL (5)*\n` +
-                     `• /chatbot_on-off / /clear: Limpiar / /url: Acortar\n` +
+                     `• /chatbot_on / /chatbot_off / /clear: Limpiar / /url: Acortar\n` +
                      `• /clima [Ciudad]: Reporte METAR\n` +
                      `• /briefing: Reporte diario / /board_report: Semanal\n\n` +
-      `_Estatus: 31 Comandos Activos en Motor v5.3. Usa /help para reconsultar._`;
+                     `_Estatus: 31 Comandos Activos (Blindaje v5.3). Usa /help para reconsultar._`;
     
     await sendTelegram(chatId, token, helpMenu, 'Markdown');
     return res.status(200).send('OK');
@@ -1033,7 +1035,7 @@ export default async function handler(req, res) {
 
   // Fallback para comandos no reconocidos
   if (text.startsWith('/')) {
-    await sendTelegram(chatId, token, '🤖 *Comando no reconocido en esta versión (v5.0).* \nUsa /comandos para ver las funciones activas del motor actual.');
+    await sendTelegram(chatId, token, '🤖 *Comando no reconocido.* \nUsa /comandos para ver las funciones activas del motor actual.');
   }
 
   return res.status(200).send('OK');
