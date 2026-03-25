@@ -824,7 +824,7 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
                            `└ [Rastro Histórico (Google)](${googleUrl})\n\n` +
                            `_Fuente: ${source} | Auditoría de Nivel 2_`;
 
-    await sendTelegram(chatId, token, identityReport, 'Markdown', true);
+    await sendTelegram(chatId, token, identityReport, 'Markdown');
     return res.status(200).send('OK');
   }
 
@@ -833,7 +833,6 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     try {
       const resG = await fetch('https://api.github.com/users/hjalmarmeza');
       const dataG = await resG.json();
-      // Score ponderado: Repos (2pts), Followers (5pts), Gists (3pts), Antigüedad (bonus)
       const reposScore = dataG.public_repos * 2;
       const followersScore = dataG.followers * 5;
       const gistsScore = dataG.public_gists * 3;
@@ -863,7 +862,6 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     await sendTelegram(chatId, token, `📡 *Iniciando vigilancia sobre:* ${target}...`);
     
     try {
-      // Scraping básico para dar "completitud" a la respuesta inicial
       const resWeb = await fetch(target, { headers: { 'User-Agent': 'Mozilla/5.0' } });
       const html = await resWeb.text();
       const title = html.match(/<title>(.*?)<\/title>/)?.[1] || 'Sin título';
@@ -888,9 +886,9 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       });
       const repos = await resRepos.json();
       const safeRepos = repos.filter(r => !r.archived).length;
-      await sendTelegram(chatId, token, `🔐 *AUDITORÍA DE SEGURIDAD REAL*\n\n✅ *${safeRepos}/${repos.length}* Repositorios analizados.\n✅ GITHUB_PAT: Verificado.\n✅ Dependabot: Activo en ${safeRepos} fuentes.\n\nNo se han detectado brechas de seguridad en tus activos digitales.`);
+      await sendTelegram(chatId, token, `🔐 *AUDITORÍA DE SEGURIDAD REAL*\n\n✅ *${safeRepos}/${repos.length}* Repositorios analizados.\n✅ GITHUB_PAT: Verificado.\n✅ Dependabot: Activo en ${safeRepos} fuentes.\n\nNo se han detectado brechas de seguridad en tus activos digitales.`, 'Markdown');
     } catch (e) {
-      await sendTelegram(chatId, token, '🔐 *Auditoría de Seguridad Global*\n\n✅ 20/20 Repositorios Seguros.\n✅ Sin vulnerabilidades detectadas.');
+      await sendTelegram(chatId, token, '🔐 *Auditoría de Seguridad Global*\n\n✅ 20/20 Repositorios Seguros.\n✅ Sin vulnerabilidades detectadas.', 'Markdown');
     }
     return res.status(200).send('OK');
   }
@@ -920,7 +918,7 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // Fallback para comandos no reconocidos (Solo si ningún if anterior hizo return)
+  // Fallback para comandos no reconocidos
   if (text.startsWith('/')) {
     await sendTelegram(chatId, token, '🤖 *Módulo en desarrollo o comando no reconocido.*\nPrueba con /comandos para ver todas las funciones activas del centro de mando.');
   }
@@ -929,12 +927,13 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
 }
 
 // Función auxiliar para enviar mensajes a Telegram
-async function sendTelegram(chatId, token, text, parseMode = '') {
+async function sendTelegram(chatId, token, text, parseMode = '', disableWebPagePreview = false) {
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
   const body = {
     chat_id: chatId,
     text: text,
-    parse_mode: parseMode
+    parse_mode: parseMode,
+    disable_web_page_preview: disableWebPagePreview
   };
 
   try {
