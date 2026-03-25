@@ -680,7 +680,12 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
 
     try {
       // 1. Obtener Abstract de DuckDuckGo (API Gratuita y sin Key)
-      const ddgRes = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(targetName)}&format=json&no_html=1&skip_disambig=1`);
+      // Nota: Añadimos User-Agent porque DDG bloquea peticiones sin cabecera identificable
+      const ddgRes = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(targetName)}&format=json&no_html=1&skip_disambig=1`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
       const ddgData = await ddgRes.json();
       
       const abstract = ddgData.AbstractText || 'No hay un resumen enciclopédico inmediato, se requiere análisis de enlaces profundos.';
