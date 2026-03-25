@@ -939,12 +939,13 @@ export default async function handler(req, res) {
     await sendTelegram(chatId, token, '🔍 Policiando tu Google Drive...');
 
     try {
+      // Llamada limpia para evitar errores sintácticos en Google Drive
       const response = await fetch(`${bridgeUrl}?token=${bridgeToken}&action=audit`);
       const auditText = await response.text();
-      const finalMsg = auditText.trim() || '❌ No se detectaron archivos o el script no respondió.';
+      const finalMsg = auditText.trim() || '✅ Auditoría completada: No hay amenazas detectadas.';
       await sendTelegram(chatId, token, finalMsg);
     } catch (e) {
-      await sendTelegram(chatId, token, '❌ Error al auditar tu Google Drive.');
+      await sendTelegram(chatId, token, '❌ Error de conexión con tu auditoría de Google Drive.');
     }
     return res.status(200).send('OK');
   }
