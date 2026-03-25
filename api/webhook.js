@@ -16,20 +16,26 @@ export default async function handler(req, res) {
   const rawText = message.text || '';
   const text = rawText.toLowerCase().trim();
 
+  // DEBUG: Para ver qué le llega al bot realmente
+  if (text.includes('debug')) {
+    await sendTelegram(chatId, token, `🆔 Chat: ${chatId}\n📝 Recibido: "${rawText}"\n⚙️ Procesado: "${text}"`);
+    return res.status(200).send('OK');
+  }
+
   // Bloqueo de seguridad: Solo Hjalmar puede usar el bot
   if (chatId !== ALLOWED_CHAT_ID) {
-    await sendTelegram(chatId, token, 'Acceso Denegado. Este sistema es privado y solo responde al Administrador.');
+    await sendTelegram(chatId, token, 'Acceso Denegado.');
     return res.status(200).send('OK');
   }
 
   // Comando de Inicio
-  if (text === '/start') {
-    await sendTelegram(chatId, token, '¡Hola Hjalmar! Bienvenido al Command Center Pro.\nSoy tu centinela digital 24/7.\nEnvíame /comandos para ver todas mis funciones estratégicas.');
+  if (text.includes('start')) {
+    await sendTelegram(chatId, token, '¡Hola Hjalmar! Sistema activo. Envíame /comandos.');
     return res.status(200).send('OK');
   }
 
-  // Menú de Comandos (Guía Maestra)
-  if (text === '/comandos') {
+  // Menú de Comandos (Guía Maestra) - Detección flexible
+  if (text.includes('comando')) {
     const helpMenu = `🤖 *Guía de Mando - Meza Command Center*
 
 *📊 Monitoreo y Salud*
