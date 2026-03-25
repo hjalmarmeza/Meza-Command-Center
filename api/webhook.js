@@ -31,7 +31,10 @@ export default async function handler(req, res) {
   // Comando de Inicio
   if (text.includes('start')) {
     await sendTelegram(chatId, token, '¡Hola Hjalmar! Sistema activo. Envíame /comandos.');
-    return res.status(200).send  // Menú de Comandos (Guía Maestra) - /help o /comandos
+    return res.status(200).send('OK');
+  }
+
+  // Menú de Comandos (Guía Maestra) - /help o /comandos
   if (text === '/help' || text === '/comandos') {
     const helpMenu = `🤖 *CENTRO DE MANDO - MEZA COMMAND CENTER v5.1*\n\n` +
                      `📊 *MONITOREO Y SALUD (7)*\n` +
@@ -60,9 +63,6 @@ export default async function handler(req, res) {
                      `_Estatus: 31 Comandos Activos. Usa /help para reconsultar._`;
     
     await sendTelegram(chatId, token, helpMenu, 'Markdown');
-    return res.status(200).send('OK');
-  }
-egram(chatId, token, helpMenu, 'Markdown');
     return res.status(200).send('OK');
   }
 
