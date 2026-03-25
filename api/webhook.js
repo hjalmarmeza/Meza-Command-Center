@@ -142,20 +142,24 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       location = query.substring(commaIndex + 1).trim();
     }
 
-    // Refuerzo de localización para evitar México: Traducimos nombres comunes a formatos que LinkedIn prefiere
+    // Refuerzo de localización y restricción de radio (distance=0)
     let finalLocation = location;
+    let extraParams = '';
+    
     if (location.toUpperCase().includes('ESP')) {
-      // Formato canónico que LinkedIn no confunde con México
       finalLocation = location.toUpperCase().includes('SALAMANCA') ? 'Salamanca, Castile and Leon, Spain' : 'Spain';
+      // distance=10 (o 0 si LinkedIn lo permite) obliga a no expandir a nivel continental
+      // f_WT=1 fuerza On-site (presencial) para evitar los "Remoto en Europa"
+      extraParams = '&distance=10&f_WT=1';
     }
 
-    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(finalLocation)}&f_TPR=r2592000`;
+    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(finalLocation)}&f_TPR=r2592000${extraParams}`;
     
-    const jobMsg = `💼 *RECLUTAMIENTO EJECUTIVO*\n\n` +
+    const jobMsg = `💼 *RECLUTAMIENTO LOCAL PRIVADO*\n\n` +
                    `🛠️ *Perfil:* ${keywords}\n` +
                    `📍 *Localización:* ${location || 'Global'}\n\n` +
                    `👉 [Ver ofertas en LinkedIn](${searchUrl})\n\n` +
-                   `_Búsqueda forzada por región geográfica._`;
+                   `_Filtro de presencialidad y radio de 10km activado._`;
 
     await sendTelegram(chatId, token, jobMsg, 'Markdown');
     return res.status(200).send('OK');
