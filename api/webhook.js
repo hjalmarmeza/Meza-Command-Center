@@ -965,16 +965,18 @@ export default async function handler(req, res) {
       return res.status(200).send('OK');
     }
 
+    // Respondemos OK de inmediato para evitar reintentos de Telegram
+    res.status(200).send('OK');
+
     try {
       const response = await fetch(`${bridgeUrl}?token=${bridgeToken}&action=agenda`);
       const agendaText = await response.text();
-      // Si la respuesta es vacía o denegada, informamos
       const finalMsg = agendaText.trim() || '❌ No se recibió respuesta de Google.';
       await sendTelegram(chatId, token, finalMsg, 'Markdown');
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error al conectar con tu Google Calendar.');
     }
-    return res.status(200).send('OK');
+    return; // Ya respondimos arriba
   }
 
   // COMANDO: /audit_drive (Google Drive via Apps Script)
@@ -987,20 +989,19 @@ export default async function handler(req, res) {
       return res.status(200).send('OK');
     }
 
+    // Respondemos OK de inmediato para evitar que Telegram se impaciente y reintente
+    res.status(200).send('OK');
     await sendTelegram(chatId, token, '🔍 Policiando tu Google Drive...');
 
     try {
-      // Llamada limpia para evitar errores sintácticos en Google Drive
       const response = await fetch(`${bridgeUrl}?token=${bridgeToken}&action=audit`);
       const auditText = await response.text();
       const finalMsg = auditText.trim() || '✅ Auditoría completada: No hay amenazas detectadas.';
-      
-      // Enviamos con Markdown explícito
       await sendTelegram(chatId, token, finalMsg, 'Markdown');
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error de conexión con tu auditoría de Google Drive.');
     }
-    return res.status(200).send('OK');
+    return; // Ya respondimos arriba
   }
 
   // COMANDO: /vcard, /vcars o /id
