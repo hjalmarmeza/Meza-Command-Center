@@ -676,37 +676,43 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
   if (text.startsWith('/huella')) {
     const targetName = text.replace('/huella', '').trim() || 'Hjalmar Meza';
     
-    await sendTelegram(chatId, token, `🕵️‍♂️ *RADAR DE INTELIGENCIA ACTIVO...*\n_Rastreando reputación de: ${targetName}_`);
+    await sendTelegram(chatId, token, `🕵️‍♂️ *RADAR DE INTELIGENCIA ACTIVO...*\n_Analizando reputación de: ${targetName}_`);
+
+    let abstract = 'No hay síntesis inmediata disponible.';
+    let engine = 'DuckDuckGo';
 
     try {
-      // 1. Obtener Abstract de DuckDuckGo (API Gratuita y sin Key)
-      // Nota: Añadimos User-Agent porque DDG bloquea peticiones sin cabecera identificable
-      const ddgRes = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(targetName)}&format=json&no_html=1&skip_disambig=1`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
+      // 1. Intento con DuckDuckGo API (con headers de navegador)
+      const ddgRes = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(targetName)}&format=json&no_html=1`, {
+        headers: { 'User-Agent': 'Mozilla/5.0' }
       });
-      const ddgData = await ddgRes.json();
-      
-      const abstract = ddgData.AbstractText || 'No hay un resumen enciclopédico inmediato, se requiere análisis de enlaces profundos.';
-      const related = ddgData.RelatedTopics && ddgData.RelatedTopics.length > 0 ? ddgData.RelatedTopics[0].Text : 'N/A';
-
-      // 2. URLs de Inteligencia
-      const googleUrl = `https://www.google.com/search?q="${encodeURIComponent(targetName)}"`;
-      const linkedinUrl = `https://www.linkedin.com/pub/dir?firstName=${encodeURIComponent(targetName.split(' ')[0])}&lastName=${encodeURIComponent(targetName.split(' ').slice(1).join(' '))}&trp=2`;
-
-      const osintReport = `📊 *INFORME DE REPUTACIÓN GLOBAL*\n\n` +
-                          `👤 *Objetivo:* ${targetName}\n\n` +
-                          `📝 *SÍNTESIS DIGITAL:*\n_${abstract}_\n\n` +
-                          `🔗 *FUENTES DE INTELIGENCIA:*\n` +
-                          `└ [Análisis en Google](${googleUrl})\n` +
-                          `└ [Directorio LinkedIn](${linkedinUrl})\n\n` +
-                          `_Inteligencia extraída en tiempo real vía DuckDuckGo Core._`;
-
-      await sendTelegram(chatId, token, osintReport, 'Markdown', true);
+      if (ddgRes.ok) {
+        const ddgData = await ddgRes.json();
+        if (ddgData.AbstractText) abstract = ddgData.AbstractText;
+      } else {
+        // Fallback a Wikipedia si DDG falla
+        engine = 'Wikipedia';
+        const wikiRes = await fetch(`https://es.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(targetName)}&limit=1&format=json`);
+        const wikiData = await wikiRes.json();
+        if (wikiData[2] && wikiData[2][0]) abstract = wikiData[2][0];
+      }
     } catch (e) {
-      await sendTelegram(chatId, token, '❌ Error en los sistemas de inteligencia externa.');
+      abstract = `⚠️ Error de conexión con motores de búsqueda (${e.message}). Se recomienda análisis manual de fuentes.`;
     }
+
+    // 2. URLs de Inteligencia (Siempre funcionales)
+    const googleUrl = `https://www.google.com/search?q="${encodeURIComponent(targetName)}"`;
+    const linkedinUrl = `https://www.linkedin.com/pub/dir?firstName=${encodeURIComponent(targetName.split(' ')[0])}&lastName=${encodeURIComponent(targetName.split(' ').slice(1).join(' '))}&trp=2`;
+
+    const osintReport = `📊 *INFORME DE REPUTACIÓN GLOBAL*\n\n` +
+                        `👤 *Objetivo:* ${targetName}\n\n` +
+                        `📝 *RESUMEN DE INTELIGENCIA:*\n_${abstract}_\n\n` +
+                        `🔗 *FUENTES DE AUDITORÍA:*\n` +
+                        `└ [Análisis en Google](${googleUrl})\n` +
+                        `└ [Directorio LinkedIn](${linkedinUrl})\n\n` +
+                        `_Fuente: ${engine} Core Intelligence_`;
+
+    await sendTelegram(chatId, token, osintReport, 'Markdown', true);
     return res.status(200).send('OK');
   }
 
