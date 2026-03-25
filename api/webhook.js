@@ -907,17 +907,19 @@ export default async function handler(req, res) {
   // COMANDO: /hoy o /agenda (Google Calendar via Apps Script)
   if (text === '/hoy' || text === '/agenda') {
     const bridgeUrl = process.env.GOOGLE_SCRIPT_URL;
-    const bridgeToken = "TU_TOKEN_AQUÍ"; // Debe coincidir con el del script
+    const bridgeToken = process.env.GOOGLE_BRIDGE_TOKEN;
 
-    if (!bridgeUrl) {
-      await sendTelegram(chatId, token, '⚠️ Falta configurar GOOGLE_SCRIPT_URL en Vercel.');
+    if (!bridgeUrl || !bridgeToken) {
+      await sendTelegram(chatId, token, '⚠️ Configuración incompleta: Verifica GOOGLE_SCRIPT_URL y GOOGLE_BRIDGE_TOKEN en Vercel.');
       return res.status(200).send('OK');
     }
 
     try {
       const response = await fetch(`${bridgeUrl}?token=${bridgeToken}&action=agenda`);
       const agendaText = await response.text();
-      await sendTelegram(chatId, token, agendaText);
+      // Si la respuesta es vacía o denegada, informamos
+      const finalMsg = agendaText.trim() || '❌ No se recibió respuesta de Google.';
+      await sendTelegram(chatId, token, finalMsg);
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error al conectar con tu Google Calendar.');
     }
@@ -927,10 +929,10 @@ export default async function handler(req, res) {
   // COMANDO: /drive_audit (Google Drive via Apps Script)
   if (text === '/drive_audit') {
     const bridgeUrl = process.env.GOOGLE_SCRIPT_URL;
-    const bridgeToken = "TU_TOKEN_AQUÍ"; // Debe coincidir con el del script
+    const bridgeToken = process.env.GOOGLE_BRIDGE_TOKEN;
 
-    if (!bridgeUrl) {
-      await sendTelegram(chatId, token, '⚠️ Falta configurar GOOGLE_SCRIPT_URL en Vercel.');
+    if (!bridgeUrl || !bridgeToken) {
+      await sendTelegram(chatId, token, '⚠️ Configuración incompleta: Verifica GOOGLE_SCRIPT_URL y GOOGLE_BRIDGE_TOKEN en Vercel.');
       return res.status(200).send('OK');
     }
 
@@ -939,7 +941,8 @@ export default async function handler(req, res) {
     try {
       const response = await fetch(`${bridgeUrl}?token=${bridgeToken}&action=audit`);
       const auditText = await response.text();
-      await sendTelegram(chatId, token, auditText);
+      const finalMsg = auditText.trim() || '❌ No se detectaron archivos o el script no respondió.';
+      await sendTelegram(chatId, token, finalMsg);
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error al auditar tu Google Drive.');
     }
