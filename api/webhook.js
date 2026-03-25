@@ -319,29 +319,54 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
 
   // COMANDO: /tech [Repo]
   if (text.startsWith('/tech')) {
-    const repoName = text.replace('/tech', '').trim();
+    let input = text.replace('/tech', '').trim();
     const gitToken = process.env.GITHUB_PAT;
-    if (!repoName) {
-      await sendTelegram(chatId, token, 'Uso: `/tech NombreRepo` (ej: cv)');
+    
+    if (!input) {
+      await sendTelegram(chatId, token, 'Uso: `/tech cv` o `/tech vcard`');
       return res.status(200).send('OK');
     }
 
     try {
-      const pkgRes = await fetch(`https://api.github.com/repos/${ALLOWED_CHAT_ID === '7823163854' ? 'hjalmarmeza' : ''}/${repoName}/contents/package.json`, {
+      // 1. Buscamos el repositorio que mejor coincida (Fuzzy-ish)
+      const reposRes = await fetch('https://api.github.com/user/repos?per_page=100', {
         headers: { 'Authorization': `token ${gitToken}` }
       });
-      if (pkgRes.status === 404) {
-        await sendTelegram(chatId, token, '❌ No se encontró el repo o no tiene package.json.');
+      const repos = await reposRes.json();
+      
+      const repo = repos.find(r => 
+        r.name.toLowerCase().includes(input.toLowerCase()) || 
+        input.toLowerCase().includes(r.name.toLowerCase())
+      );
+
+      if (!repo) {
+        await sendTelegram(chatId, token, `❌ No encontré ningún repositorio que coincida con "${input}".`);
         return res.status(200).send('OK');
       }
+
+      // 2. Intentamos leer package.json
+      const pkgRes = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/contents/package.json`, {
+        headers: { 'Authorization': `token ${gitToken}` }
+      });
+      
+      if (pkgRes.status === 404) {
+        await sendTelegram(chatId, token, `📁 *Proyecto:* ${repo.name}\n\n⚠️ Este proyecto no usa \`package.json\`. Probablemente sea HTML/JS puro o use otro gestor.`);
+        return res.status(200).send('OK');
+      }
+
       const pkgData = await pkgRes.json();
       const content = Buffer.from(pkgData.content, 'base64').toString();
       const pkg = JSON.parse(content);
-      const deps = Object.keys(pkg.dependencies || {}).join(', ') || 'Ninguna';
+      const deps = Object.keys(pkg.dependencies || {}).join(', ') || 'Ninguna (Solo devDependencies)';
       
-      await sendTelegram(chatId, token, `💻 *Stack Tecnológico: ${repoName}*\n\n*Dependencias:* ${deps.slice(0, 200)}...`, 'Markdown');
+      const techMsg = `💻 *STACK TECNOLÓGICO*\n\n` +
+                      `📂 *Proyecto:* ${repo.name}\n` +
+                      `🛠️ *Tecnologías:* ${deps.slice(0, 300)}...\n\n` +
+                      `_Análisis automatizado del manifiesto de dependencias._`;
+      
+      await sendTelegram(chatId, token, techMsg, 'Markdown');
     } catch (e) {
-      await sendTelegram(chatId, token, '❌ Error al auditar el stack.');
+      await sendTelegram(chatId, token, '❌ Error al auditar el stack tecnológico.');
     }
     return res.status(200).send('OK');
   }
