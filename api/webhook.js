@@ -305,8 +305,8 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       await sendTelegram(chatId, token, 'Uso: `/qr https://tuweb.com`');
       return res.status(200).send('OK');
     }
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}&color=D4AF37&bgcolor=0a1120`;
-    await sendTelegram(chatId, token, `🖼️ *Generador de QR Pro*\n\n[Pulsa aquí para ver tu QR](${qrUrl})`, 'Markdown');
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}&color=D4AF37&bgcolor=0a1120&qzone=2&format=png`;
+    await sendTelegram(chatId, token, `🖼️ *Generador de QR Premium*\n\n[📥 Toca aquí para ver o descargar tu QR](${qrUrl})\n\n_Optimizado para escaneo en vCard y eventos._`, 'Markdown');
     return res.status(200).send('OK');
   }
 
