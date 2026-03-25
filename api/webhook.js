@@ -936,9 +936,23 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
+  // COMANDO: /vcard, /vcars o /id
+  if (text.includes('vcard') || text.includes('vcars') || text.includes('id')) {
+    const vcardUrl = 'https://hjalmarmeza.github.io/vcard/';
+    const portfolioUrl = 'https://hjalmarmeza.github.io/cv/';
+    const message = `🪪 *TARJETA DIGITAL EJECUTIVA*\n\n` +
+                    `👤 *Hjalmar Meza*\n` +
+                    `🏢 Director de Proyectos & IA\n\n` +
+                    `🌐 [Portafolio Interactivo](${portfolioUrl})\n` +
+                    `📲 [Descargar vCard Móvil](${vcardUrl})\n\n` +
+                    `_Versión del Sistema: 4.5 EX (Live)_`;
+    await sendTelegram(chatId, token, message, 'Markdown');
+    return res.status(200).send('OK');
+  }
+
   // Fallback para comandos no reconocidos
   if (text.startsWith('/')) {
-    await sendTelegram(chatId, token, '🤖 *Módulo en desarrollo o comando no reconocido.*\nPrueba con /comandos para ver todas las funciones activas del centro de mando.');
+    await sendTelegram(chatId, token, '🤖 *Comando no reconocido en esta versión (v4.5).* \nUsa /comandos para ver las funciones activas del motor actual.');
   }
 
   return res.status(200).send('OK');
