@@ -919,7 +919,7 @@ export default async function handler(req, res) {
       const agendaText = await response.text();
       // Si la respuesta es vacía o denegada, informamos
       const finalMsg = agendaText.trim() || '❌ No se recibió respuesta de Google.';
-      await sendTelegram(chatId, token, finalMsg);
+      await sendTelegram(chatId, token, finalMsg, 'Markdown');
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error al conectar con tu Google Calendar.');
     }
@@ -943,7 +943,7 @@ export default async function handler(req, res) {
       const response = await fetch(`${bridgeUrl}?token=${bridgeToken}&action=audit`);
       const auditText = await response.text();
       const finalMsg = auditText.trim() || '✅ Auditoría completada: No hay amenazas detectadas.';
-      await sendTelegram(chatId, token, finalMsg);
+      await sendTelegram(chatId, token, finalMsg, 'Markdown');
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error de conexión con tu auditoría de Google Drive.');
     }
@@ -973,23 +973,21 @@ export default async function handler(req, res) {
 }
 
 // Función auxiliar para enviar mensajes a Telegram
-async function sendTelegram(chatId, token, text, parseMode = '', disableWebPagePreview = false) {
+async function sendTelegram(chatId, token, text, parseMode = 'Markdown') {
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
-  const body = {
-    chat_id: chatId,
-    text: text,
-    parse_mode: parseMode,
-    disable_web_page_preview: disableWebPagePreview
-  };
-
   try {
+    const body = {
+      chat_id: chatId,
+      text: text,
+      parse_mode: parseMode
+    };
     await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
-  } catch (e) {
-    console.error('Error enviando a Telegram:', e);
+  } catch (error) {
+    console.error('Error sending Telegram message:', error);
   }
 }
 
