@@ -135,29 +135,21 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
 
     let keywords = query;
     let location = '';
-    let geoId = ''; 
     
     if (query.includes(',')) {
       const commaIndex = query.indexOf(',');
       keywords = query.substring(0, commaIndex).trim();
       location = query.substring(commaIndex + 1).trim();
-      
-      const locUpper = location.toUpperCase();
-      // IDs más restrictivos de LinkedIn
-      if (locUpper.includes('ESPAÑA') || locUpper.includes('SPAIN')) geoId = '100506914';
-      else if (locUpper.includes('PERÚ') || locUpper.includes('PERU')) geoId = '104621637';
-      else if (locUpper.includes('COLOMBIA')) geoId = '100876405';
-      else if (locUpper.includes('MÉXICO') || locUpper.includes('MEXICO')) geoId = '103323778';
     }
 
-    // URL ultra-precisa: f_TPR=r2592000 (último mes), f_WT=0 (presencial/híbrido local)
-    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(location)}${geoId ? '&geoId=' + geoId : ''}&f_TPR=r2592000&f_WT=0&sortBy=R`;
+    // URL semántica estándar de LinkedIn (más fiable para ciudades específicas)
+    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(location)}&f_TPR=r2592000`;
     
-    const jobMsg = `💼 *RECLUTAMIENTO PRECIZADO*\n\n` +
+    const jobMsg = `💼 *BÚSQUEDA DE EMPLEO*\n\n` +
                    `🛠️ *Perfil:* ${keywords}\n` +
-                   `📍 *Localización:* ${location || 'Global'}\n\n` +
-                   `👉 [Ver ofertas confirmadas en ${location}](${searchUrl})\n\n` +
-                   `_Filtro: Presencial/Híbrido en la zona específica._`;
+                   `📍 *Zona:* ${location || 'Global'}\n\n` +
+                   `👉 [Ver vacantes en LinkedIn](${searchUrl})\n\n` +
+                   `_Buscando en tiempo real por coincidencia semántica._`;
 
     await sendTelegram(chatId, token, jobMsg, 'Markdown');
     return res.status(200).send('OK');
