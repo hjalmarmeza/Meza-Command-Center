@@ -584,6 +584,9 @@ export default async function handler(req, res) {
                  `📖 *Concepto:* ${item.d}\n\n` +
                  `💡 *Acción Inmediata:* ${item.a}\n\n` +
                  `_Mando v5.1 - Inteligencia de Negocios_`;
+    await sendTelegram(chatId, token, msg, 'Markdown');
+    return res.status(200).send('OK');
+  }
   // COMANDO: /vcard (Archivo de Contacto)
   if (text === '/vcard') {
     const vcardUrl = 'https://hjalmarmeza.github.io/vcard/';
