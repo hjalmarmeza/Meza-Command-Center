@@ -674,65 +674,33 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
 
   // COMANDO: /huella [Nombre]
   if (text.startsWith('/huella')) {
-    const inputName = text.replace('/huella', '').trim();
-    const isSelf = !inputName || inputName.toLowerCase().includes('hjalmar') || inputName.toLowerCase().includes('meza');
-    const targetName = inputName || 'Hjalmar Meza';
-    const gitToken = process.env.GITHUB_PAT;
+    const targetName = text.replace('/huella', '').trim() || 'Hjalmar Meza';
     
-    await sendTelegram(chatId, token, `🔦 *INICIANDO RASTREO DIGITAL...*\n_Buscando huella de: ${targetName}_`);
+    await sendTelegram(chatId, token, `🕵️‍♂️ *RADAR DE INTELIGENCIA ACTIVO...*\n_Rastreando reputación de: ${targetName}_`);
 
     try {
-      if (isSelf) {
-        // --- AUDITORÍA DE MARCA PERSONAL (Hjalmar) ---
-        const userRes = await fetch('https://api.github.com/users/hjalmarmeza', {
-          headers: { 'Authorization': `token ${gitToken}` }
-        });
-        const userData = await userRes.json();
-        const reposRes = await fetch('https://api.github.com/users/hjalmarmeza/repos?sort=pushed', {
-          headers: { 'Authorization': `token ${gitToken}` }
-        });
-        const repos = await reposRes.json();
-        const languages = {};
-        repos.forEach(r => { if(r.language) languages[r.language] = (languages[r.language] || 0) + 1; });
-        const topLang = Object.keys(languages).sort((a,b) => languages[b] - languages[a])[0] || 'Web Stack';
+      // 1. Obtener Abstract de DuckDuckGo (API Gratuita y sin Key)
+      const ddgRes = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(targetName)}&format=json&no_html=1&skip_disambig=1`);
+      const ddgData = await ddgRes.json();
+      
+      const abstract = ddgData.AbstractText || 'No hay un resumen enciclopédico inmediato, se requiere análisis de enlaces profundos.';
+      const related = ddgData.RelatedTopics && ddgData.RelatedTopics.length > 0 ? ddgData.RelatedTopics[0].Text : 'N/A';
 
-        const sites = [{ name: 'CV Web', url: 'https://hjalmarmeza.github.io/cv/' }, { name: 'vCard', url: 'https://hjalmarmeza.github.io/vcard/' }];
-        let sitesStatus = '';
-        for (const site of sites) {
-          try { const sRes = await fetch(site.url); sitesStatus += `${sRes.ok ? '✅' : '⚠️'} ${site.name}: ${sRes.status}\n`; } 
-          catch { sitesStatus += `❌ ${site.name}: Offline\n`; }
-        }
+      // 2. URLs de Inteligencia
+      const googleUrl = `https://www.google.com/search?q="${encodeURIComponent(targetName)}"`;
+      const linkedinUrl = `https://www.linkedin.com/pub/dir?firstName=${encodeURIComponent(targetName.split(' ')[0])}&lastName=${encodeURIComponent(targetName.split(' ').slice(1).join(' '))}&trp=2`;
 
-        const report = `👣 *MARCA PERSONAL: ${targetName.toUpperCase()}*\n\n` +
-                       `💻 *PERFIL TÉCNICO (GIT)*\n` +
-                       `└ Dominio: \`${topLang}\`\n` +
-                       `└ Repos Públicos: ${userData.public_repos}\n\n` +
-                       `🌐 *ESTADO DE ACTIVOS*\n${sitesStatus}\n` +
-                       `🔍 *REPUTACIÓN ONLINE*\n` +
-                       `└ [Google Search](https://www.google.com/search?q="${encodeURIComponent(targetName)}")\n` +
-                       `└ [GitHub Profile](${userData.html_url})`;
-        await sendTelegram(chatId, token, report, 'Markdown', true);
-      } else {
-        // --- RASTREO OSINT EXTERNO (Cualquier Persona) ---
-        const googleUrl = `https://www.google.com/search?q="${encodeURIComponent(targetName)}"`;
-        
-        // Split inteligente para nombres compuestos: Primera palabra=Nombre, Resto=Apellidos
-        const nameParts = targetName.split(' ');
-        const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(' ') || '';
-        
-        const linkedinUrl = `https://www.linkedin.com/pub/dir?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&trp=2`;
-        
-        const osintMsg = `🕵️‍♂️ *INVESTIGACIÓN OSINT*\n\n` +
-                         `👤 *Objetivo:* ${targetName}\n\n` +
-                         `🔗 *Fuentes de Inteligencia:*\n` +
-                         `└ [Rastreo en Google](${googleUrl})\n` +
-                         `└ [Directorio de LinkedIn](${linkedinUrl})\n\n` +
-                         `_Búsqueda realizada bajo parámetros de reputación profesional._`;
-        await sendTelegram(chatId, token, osintMsg, 'Markdown', true);
-      }
+      const osintReport = `📊 *INFORME DE REPUTACIÓN GLOBAL*\n\n` +
+                          `👤 *Objetivo:* ${targetName}\n\n` +
+                          `📝 *SÍNTESIS DIGITAL:*\n_${abstract}_\n\n` +
+                          `🔗 *FUENTES DE INTELIGENCIA:*\n` +
+                          `└ [Análisis en Google](${googleUrl})\n` +
+                          `└ [Directorio LinkedIn](${linkedinUrl})\n\n` +
+                          `_Inteligencia extraída en tiempo real vía DuckDuckGo Core._`;
+
+      await sendTelegram(chatId, token, osintReport, 'Markdown', true);
     } catch (e) {
-      await sendTelegram(chatId, token, '❌ Error en la auditoría digital.');
+      await sendTelegram(chatId, token, '❌ Error en los sistemas de inteligencia externa.');
     }
     return res.status(200).send('OK');
   }
