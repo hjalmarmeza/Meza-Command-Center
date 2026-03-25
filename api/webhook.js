@@ -127,14 +127,30 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
 
   // COMANDO: /jobs [Puesto]
   if (text.startsWith('/jobs')) {
-    const query = text.replace('/jobs', '').trim();
+    let query = text.replace('/jobs', '').trim();
     if (!query) {
-      await sendTelegram(chatId, token, 'Uso: `/jobs Desarrollador` o `/jobs Director`');
+      await sendTelegram(chatId, token, 'Uso: `/jobs Puesto, Ciudad, País` (ej: `/jobs Supervisor, Madrid`)');
       return res.status(200).send('OK');
     }
-    // Buscamos ofertas en LinkedIn publicadas en el último mes
-    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(query)}`;
-    await sendTelegram(chatId, token, `💼 *Buscando vacantes para:* ${query}\n\n👉 [Ver ofertas en LinkedIn](${searchUrl})\n\n_Filtro aplicado: Publicadas recientemente._`, 'Markdown');
+
+    // Separamos puesto de ubicación por la primera coma
+    let keywords = query;
+    let location = '';
+    if (query.includes(',')) {
+      const parts = query.split(',');
+      keywords = parts[0].trim();
+      location = parts.slice(1).join(',').trim();
+    }
+
+    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(location)}`;
+    
+    const jobMsg = `💼 *BÚSQUEDA DE EMPLEO*\n\n` +
+                   `🛠️ *Puesto:* ${keywords}\n` +
+                   `📍 *Ubicación:* ${location || 'Global'}\n\n` +
+                   `👉 [Ver vacantes en LinkedIn](${searchUrl})\n\n` +
+                   `_Resultados filtrados por relevancia y fecha._`;
+
+    await sendTelegram(chatId, token, jobMsg, 'Markdown');
     return res.status(200).send('OK');
   }
 
