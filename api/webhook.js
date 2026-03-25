@@ -13,7 +13,8 @@ export default async function handler(req, res) {
   }
 
   const chatId = message.chat.id;
-  const text = message.text || '';
+  const rawText = message.text || '';
+  const text = rawText.toLowerCase().trim();
 
   // Bloqueo de seguridad: Solo Hjalmar puede usar el bot
   if (chatId !== ALLOWED_CHAT_ID) {
@@ -70,8 +71,8 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /stats (Tráfico GitHub)
-  if (text === '/stats') {
+  // COMANDO: /status o /stats (Tráfico GitHub)
+  if (text === '/status' || text === '/stats') {
     const gitToken = process.env.GITHUB_PAT;
     if (!gitToken) {
       await sendTelegram(chatId, token, '⚠️ Falta configurar el GITHUB_PAT en Vercel.');
@@ -702,8 +703,8 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
     try {
-      // 1. Auditoría de Actividad (GitHub)
-      const reposRes = await fetch('https://api.github.com/user/repos?per_page=8&sort=updated', {
+      // 1. Auditoría de Actividad (GitHub) - Ampliado a 100 repos
+      const reposRes = await fetch('https://api.github.com/user/repos?per_page=100&sort=updated', {
         headers: { 'Authorization': `token ${gitToken}` }
       });
       const repos = await reposRes.json();
@@ -720,6 +721,10 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
         }
       }
       activityLog += `TOTAL SEMANA: ${totalCommits} cambios\n\`\`\``;
+      
+      if (totalCommits === 0) {
+        activityLog = '📈 *PRODUCTIVIDAD (GIT)*\nSin cambios detectados en tus 100+ repos esta semana.';
+      }
 
       // 2. Framework Estratégico (Mentoría)
       const frameworks = [
