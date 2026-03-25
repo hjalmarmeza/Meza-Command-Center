@@ -660,35 +660,48 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       let report = `✅ *ESTADO DE TUS ${projects.length} PROYECTOS*\n\n`;
       // Verificamos los primeros 10 por velocidad, el resto se listan
       for (let i = 0; i < Math.min(projects.length, 15); i++) {
-        const p = projects[i];
-        report += `• [${p.name}](${p.url}) 🟢\n`;
-      }
-      if (projects.length > 15) report += `\n_...y ${projects.length - 15} proyectos más verificados._`;
-      
-      await sendTelegram(chatId, token, report, 'Markdown');
-    } catch (e) {
-      await sendTelegram(chatId, token, '❌ Error al conectar con GitHub para el escaneo.');
-    }
-    return res.status(200).send('OK');
-  }
-
-  // COMANDO: /huella [Nombre]
+        const p =   // COMANDO: /huella [Nombre]
   if (text.startsWith('/huella')) {
     const targetName = text.replace('/huella', '').trim() || 'Hjalmar Meza';
     
-    await sendTelegram(chatId, token, `🕵️‍♂️ *RADAR DE INTELIGENCIA ACTIVO...*\n_Sincronizando fuentes para: ${targetName}_`);
+    await sendTelegram(chatId, token, `🕵️‍♂️ *AUDITORÍA DE IDENTIDAD DIGITAL...*\n_Escaneando huella de: ${targetName}_`);
 
-    // 1. Construcción de Fuentes de Inteligencia (100% Fiables)
+    let bio = 'No se encontró una biografía pública consolidada. Se requiere inspección de nodos individuales.';
+    let source = 'Análisis OSINT';
+
+    try {
+      // Intento de obtener Bio real de Wikipedia (Muy estable para OSINT)
+      const wikiRes = await fetch(`https://es.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(targetName)}&format=json&origin=*`);
+      const wikiData = await wikiRes.json();
+      const pages = wikiData.query.pages;
+      const pageId = Object.keys(pages)[0];
+      
+      if (pageId !== "-1") {
+        bio = pages[pageId].extract.substring(0, 300) + '...';
+        source = 'Wikipedia Reference';
+      }
+    } catch (e) {
+      // Silencioso, mantenemos la bio por defecto
+    }
+
+    // Análisis de Redes y Visibilidad
     const googleUrl = `https://www.google.com/search?q="${encodeURIComponent(targetName)}"`;
-    const newsUrl = `https://www.google.com/search?q=${encodeURIComponent(targetName)}+news&tbm=nws`;
     const linkedinUrl = `https://www.linkedin.com/pub/dir?firstName=${encodeURIComponent(targetName.split(' ')[0])}&lastName=${encodeURIComponent(targetName.split(' ').slice(1).join(' '))}&trp=2`;
-    const githubSearch = `https://github.com/search?q=${encodeURIComponent(targetName)}&type=users`;
+    const twitterUrl = `https://twitter.com/search?q=${encodeURIComponent(targetName)}&src=typed_query&f=user`;
 
-    const osintReport = `📊 *INFORME DE REPUTACIÓN GLOBAL*\n\n` +
-                        `👤 *Objetivo:* ${targetName}\n` +
-                        `📈 *Nivel de Rastro:* _Detectado en múltiples nodos_\n\n` +
-                        `🔗 *VÍAS DE INTELIGENCIA DIRECTA:*\n` +
-                        `├ [Identidad Profesional (LinkedIn)](${linkedinUrl})\n` +
+    const identityReport = `👤 *PERFIL DE IDENTIDAD GLOBAL*\n\n` +
+                           `🎯 *Objetivo:* ${targetName}\n\n` +
+                           `📝 *SÍNTESIS DE REPUTACIÓN:*\n_${bio}_\n\n` +
+                           `📊 *RADAR DE VISIBILIDAD:*\n` +
+                           `├ [Perfil Estructural (LinkedIn)](${linkedinUrl})\n` +
+                           `├ [Presencia Social (Twitter/X)](${twitterUrl})\n` +
+                           `└ [Rastro Histórico (Google)](${googleUrl})\n\n` +
+                           `_Fuente: ${source} | Auditoría de Nivel 2_`;
+
+    await sendTelegram(chatId, token, identityReport, 'Markdown', true);
+    return res.status(200).send('OK');
+  }
+\n` +
                         `├ [Menciones en Prensa (Noticias)](${newsUrl})\n` +
                         `├ [Hitos en la Red (Google Web)](${googleUrl})\n` +
                         `└ [Repositorios / Código (GitHub)](${githubSearch})\n\n` +
