@@ -34,27 +34,19 @@ export default async function handler(req, res) {
     return res.status(200).send('OK');
   }
 
-  // Menú de Comandos (Guía Maestra) - Versión Simplificada para fiabilidad
-  if (text.includes('comando')) {
+  // Menú de Comandos (Guía Maestra) - /help o /comandos
+  if (text === '/help' || text === '/comandos') {
     const helpMenu = `🤖 *Guía de Mando - Meza Command Center*\n\n` +
                      `📊 *Monitoreo y Salud*\n` +
                      `• /stats: Tráfico de proyectos\n` +
-                     `• /health: Estado de tus webs\n` +
-                     `• /briefing: Reporte diario\n` +
-                     `• /board_report: Informe semanal\n\n` +
-                     `📂 *Gestión y Productividad (Google)*\n` +
-                     `• /hoy: Tu agenda del día\n` +
-                     `• /drive_audit: Archivos públicos\n\n` +
-                     `🔍 *Inteligencia y Estrategia*\n` +
-                     `• /news: IA y Logística\n` +
-                     `• /trends: Lo más hablado\n` +
-                     `• /dolar / /euro / /crypto: Activos\n\n` +
+                     `• /health: Estado de tus webs\n\n` +
+                     `📂 *Google Workspace v5.0*\n` +
+                     `• /hoy: Agenda del día\n` +
+                     `• /audit_drive: Archivos públicos\n\n` +
                      `🛠️ *Marca y Seguridad*\n` +
-                     `• /qr: QR Directo / /huella: OSINT\n` +
                      `• /vcard: Tarjeta Digital\n` +
                      `• /audit_all: Seguridad Global\n\n` +
-                     `--- \n` +
-                     `_Motor v5.0 - Google Workspace Lite_`;
+                     `_Usa /help para volver a ver este menú._`;
     
     await sendTelegram(chatId, token, helpMenu, 'Markdown');
     return res.status(200).send('OK');
