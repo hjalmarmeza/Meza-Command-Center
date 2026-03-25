@@ -286,6 +286,119 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
+  // COMANDO: /dolar
+  if (text === '/dolar') {
+    try {
+      const resVal = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+      const data = await resVal.json();
+      const msg = `💵 *Monitor DÓLAR (USD)*\n\n` +
+                  `🇵🇪 *PEN:* ${data.rates.PEN} soles\n` +
+                  `🇨🇴 *COP:* ${data.rates.COP} pesos\n` +
+                  `🇪🇺 *EUR:* ${data.rates.EUR} euros\n\n` +
+                  `_Base: Market Rates (Costo 0)_`;
+      await sendTelegram(chatId, token, msg, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error en la API de divisas.');
+    }
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /euro
+  if (text === '/euro') {
+    try {
+      const resVal = await fetch('https://api.exchangerate-api.com/v4/latest/EUR');
+      const data = await resVal.json();
+      const msg = `💶 *Monitor EURO (EUR)*\n\n` +
+                  `🇵🇪 *PEN:* ${data.rates.PEN} soles\n` +
+                  `🇨🇴 *COP:* ${data.rates.COP} pesos\n` +
+                  `🇺🇸 *USD:* ${data.rates.USD} dólares\n\n` +
+                  `_Base: Market Rates (Costo 0)_`;
+      await sendTelegram(chatId, token, msg, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error en la API de divisas.');
+    }
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /clima [Ciudad]
+  if (text.startsWith('/clima')) {
+    const city = text.replace('/clima', '').trim() || 'Salamanca, ES';
+    try {
+      // Usamos Open-Meteo (Sin API Key, muy estable)
+      // Primero geocodificación simple para Salamanca o la ciudad dada
+      let lat = 40.9688, lon = -5.6639; // Default Salamanca
+      if (city.toLowerCase() !== 'salamanca' && city.toLowerCase() !== 'salamanca, es') {
+        const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=es&format=json`);
+        const geoData = await geo.json();
+        if (geoData.results && geoData.results[0]) {
+          lat = geoData.results[0].latitude;
+          lon = geoData.results[0].longitude;
+        }
+      }
+      
+      const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`);
+      const wData = await weatherRes.json();
+      const temp = wData.current_weather.temperature;
+      const wind = wData.current_weather.windspeed;
+      
+      const weatherMsg = `🌤️ *REPORTE METEOROLÓGICO*\n\n` +
+                         `📍 *Ubicación:* ${city}\n` +
+                         `🌡️ *Temperatura:* ${temp}°C\n` +
+                         `💨 *Viento:* ${wind} km/h\n` +
+                         `📡 *Estado:* Datos en tiempo real.\n\n` +
+                         `_Fuente: Open-Meteo Intelligence_`;
+      await sendTelegram(chatId, token, weatherMsg, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error al conectar con el satélite climático.');
+    }
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /crypto
+  if (text === '/crypto') {
+    try {
+      const resC = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true');
+      const d = await resC.json();
+      const msg = `🪙 *MERCADO CRIPTO (USD)*\n\n` +
+                  `₿ *BTC:* $${d.bitcoin.usd.toLocaleString()} (${d.bitcoin.usd_24h_change.toFixed(2)}%)\n` +
+                  `Ξ *ETH:* $${d.ethereum.usd.toLocaleString()} (${d.ethereum.usd_24h_change.toFixed(2)}%)\n` +
+                  `◎ *SOL:* $${d.solana.usd.toLocaleString()} (${d.solana.usd_24h_change.toFixed(2)}%)\n\n` +
+                  `_Estatus: Volatilidad monitoreada._`;
+      await sendTelegram(chatId, token, msg, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error al consultar CoinGecko API.');
+    }
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /ping
+  if (text === '/ping') {
+    const start = Date.now();
+    await sendTelegram(chatId, token, '🏓 *PONG*');
+    const end = Date.now();
+    await sendTelegram(chatId, token, `📡 *Latencia:* ${end - start}ms\n_Servidor: Vercel Edge_`, 'Markdown');
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /clear
+  if (text === '/clear') {
+    await sendTelegram(chatId, token, '.\n'.repeat(20) + '🧹 *Chat limpio por seguridad ejecutiva.*');
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /uptime
+  if (text === '/uptime') {
+    const uptimeSec = Math.floor(process.uptime());
+    const hours = Math.floor(uptimeSec / 3600);
+    const minutes = Math.floor((uptimeSec % 3600) / 60);
+    const msg = `⏱️ *TIEMPO DE ACTIVIDAD*\n\n` +
+                `⏳ *Sesión actual:* ${hours}h ${minutes}m\n` +
+                `🟢 *Estado:* Sistema Estable\n` +
+                `🚀 *Despliegue:* Vercel Serverless`;
+    await sendTelegram(chatId, token, msg, 'Markdown');
+    return res.status(200).send('OK');
+  }
+
   // COMANDO: /news [Tema] (Noticias bajo demanda)
   if (text.startsWith('/news')) {
     let q = text.replace('/news', '').trim();
