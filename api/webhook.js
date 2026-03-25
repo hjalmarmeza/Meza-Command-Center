@@ -540,18 +540,22 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
   // COMANDO: /check_links (Detective de Enlaces Rotos)
   if (text === '/check_links') {
     const links = [
-      'https://hjalmarmeza.github.io/cv/',
-      'https://www.linkedin.com/in/hjalmarmeza/',
-      'https://calendar.app.google/MWMTrJf3pKRLHb3H6'
+      { name: '🌐 Web CV', url: 'https://hjalmarmeza.github.io/cv/' },
+      { name: '💼 LinkedIn', url: 'https://www.linkedin.com/in/hjalmarmeza/' },
+      { name: '📅 Calendly', url: 'https://calendar.app.google/MWMTrJf3pKRLHb3H6' }
     ];
-    await sendTelegram(chatId, token, '🔎 *Verificando integridad de enlaces críticos...*');
-    let report = '🔗 *Estado de Enlaces Principales*\n\n';
+    await sendTelegram(chatId, token, '🔎 *Escaneando integridad de activos digitales...*');
+    let report = '🛠️ *DIAGNÓSTICO DE ACTIVOS*\n\n`SISTEMA          ESTADO`\n`-----------------------`\n';
     for (const link of links) {
       try {
-        const resL = await fetch(link, { method: 'HEAD' });
-        report += `${resL.ok ? '✅' : '⚠️'} [${link.split('/')[2]}](${link})\n`;
+        const resL = await fetch(link.url, { 
+          method: 'GET', // Cambiado a GET para mayor fiabilidad
+          headers: { 'User-Agent': 'Mozilla/5.0' } 
+        });
+        const statusIcon = resL.ok ? '✅ ONLINE ' : '⚠️ REVISAR';
+        report += `\`${link.name.padEnd(14)} ${statusIcon}\`\n`;
       } catch (e) {
-        report += `❌ [${link.split('/')[2]}](${link}) - Caído\n`;
+        report += `\`${link.name.padEnd(14)} ❌ CAÍDO  \`\n`;
       }
     }
     await sendTelegram(chatId, token, report, 'Markdown');
@@ -562,7 +566,8 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
   if (text.startsWith('/huella')) {
     const name = text.replace('/huella', '').trim() || 'Hjalmar Meza';
     const searchUrl = `https://www.google.com/search?q="${encodeURIComponent(name)}"`;
-    await sendTelegram(chatId, token, `👣 *Rastreando huella digital de:* ${name}\n\n[Ver resultados de reputación](${searchUrl})`, 'Markdown');
+    const message = `👣 *RASTREO DE IDENTIDAD DIGITAL*\n\nObjetivo: *${name}*\n\nHe generado un informe de reputación en tiempo real. Pulsa el botón de abajo:\n\n[🕵️‍♂️ VER RESULTADOS DE REPUTACIÓN](${searchUrl})`;
+    await sendTelegram(chatId, token, message, 'Markdown');
     return res.status(200).send('OK');
   }
 
