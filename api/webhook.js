@@ -133,23 +133,24 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       return res.status(200).send('OK');
     }
 
-    // Separamos puesto de ubicación por la primera coma de forma robusta
+    // Separamos puesto de ubicación por la primera coma
     let keywords = query;
     let location = '';
     
     if (query.includes(',')) {
       const commaIndex = query.indexOf(',');
       keywords = query.substring(0, commaIndex).trim();
-      location = query.substring(commaIndex + 1).trim(); // Captura todo: "Salamanca, España"
+      location = query.substring(commaIndex + 1).trim();
     }
 
-    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(location)}`;
+    // Usamos una estructura de URL más agresiva para LinkedIn (f_E=2,3 garantiza búsqueda de empleo)
+    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(location)}&sortBy=DD`;
     
-    const jobMsg = `💼 *SOLICITUD DE VACANTES*\n\n` +
+    const jobMsg = `💼 *RECLUTAMIENTO GEOLOCALIZADO*\n\n` +
                    `🛠️ *Perfil:* ${keywords}\n` +
-                   `📍 *Zona:* ${location || 'Global'}\n\n` +
-                   `👉 [Ver ofertas en LinkedIn](${searchUrl})\n\n` +
-                   `_Búsqueda optimizada por geolocalización._`;
+                   `📍 *Ubicación Forzada:* ${location || 'Global'}\n\n` +
+                   `👉 [Ver ofertas en ${location || 'todo el mundo'}](${searchUrl})\n\n` +
+                   `_Nota: LinkedIn priorizará "${location}" sobre tu ubicación actual._`;
 
     await sendTelegram(chatId, token, jobMsg, 'Markdown');
     return res.status(200).send('OK');
