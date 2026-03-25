@@ -129,26 +129,27 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
   if (text.startsWith('/jobs')) {
     let query = text.replace('/jobs', '').trim();
     if (!query) {
-      await sendTelegram(chatId, token, 'Uso: `/jobs Puesto, Ciudad, País` (ej: `/jobs Supervisor, Madrid`)');
+      await sendTelegram(chatId, token, 'Uso: `/jobs Puesto, Ciudad, País` (ej: `/jobs Supervisor, Salamanca, España`)');
       return res.status(200).send('OK');
     }
 
-    // Separamos puesto de ubicación por la primera coma
+    // Separamos puesto de ubicación por la primera coma de forma robusta
     let keywords = query;
     let location = '';
+    
     if (query.includes(',')) {
-      const parts = query.split(',');
-      keywords = parts[0].trim();
-      location = parts.slice(1).join(',').trim();
+      const commaIndex = query.indexOf(',');
+      keywords = query.substring(0, commaIndex).trim();
+      location = query.substring(commaIndex + 1).trim(); // Captura todo: "Salamanca, España"
     }
 
     const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(location)}`;
     
-    const jobMsg = `💼 *BÚSQUEDA DE EMPLEO*\n\n` +
-                   `🛠️ *Puesto:* ${keywords}\n` +
-                   `📍 *Ubicación:* ${location || 'Global'}\n\n` +
-                   `👉 [Ver vacantes en LinkedIn](${searchUrl})\n\n` +
-                   `_Resultados filtrados por relevancia y fecha._`;
+    const jobMsg = `💼 *SOLICITUD DE VACANTES*\n\n` +
+                   `🛠️ *Perfil:* ${keywords}\n` +
+                   `📍 *Zona:* ${location || 'Global'}\n\n` +
+                   `👉 [Ver ofertas en LinkedIn](${searchUrl})\n\n` +
+                   `_Búsqueda optimizada por geolocalización._`;
 
     await sendTelegram(chatId, token, jobMsg, 'Markdown');
     return res.status(200).send('OK');
