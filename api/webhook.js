@@ -476,11 +476,7 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
 
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}&color=${finalFg}&bgcolor=${finalBg}&qzone=2&format=png`;
     
-    await sendTelegram(chatId, token, `🖼️ *GENERADOR DE QR PERSONALIZADO*\n\n` +
-                                    `🔗 *Destino:* ${url}\n` +
-                                    `🎨 *Estilo:* ${fg} sobre ${bg}\n\n` +
-                                    `👉 [Toca aquí para ver tu QR](${qrUrl})\n\n` +
-                                    `_Formato: URL, Color, Fondo_`, 'Markdown');
+    await sendPhoto(chatId, token, qrUrl, `🖼️ *QR GENERADO*\n🔗 *Destino:* ${url}\n🎨 *Estilo:* ${fg} / ${bg}`);
     return res.status(200).send('OK');
   }
 
