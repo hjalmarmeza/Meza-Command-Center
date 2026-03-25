@@ -584,20 +584,24 @@ export default async function handler(req, res) {
                  `📖 *Concepto:* ${item.d}\n\n` +
                  `💡 *Acción Inmediata:* ${item.a}\n\n` +
                  `_Mando v5.1 - Inteligencia de Negocios_`;
-    await sendTelegram(chatId, token, msg, 'Markdown');
+  // COMANDO: /vcard (Archivo de Contacto)
+  if (text === '/vcard') {
+    const vcardUrl = 'https://hjalmarmeza.github.io/vcard/';
+    const message = `📲 *VCARD: CONTACTO MÓVIL*\n\n` +
+                    `Este es tu archivo de contacto directo para guardar en la agenda del móvil.\n\n` +
+                    `🔗 [Descargar vCard aquí](${vcardUrl})\n\n` +
+                    `_Uso: Para compartir tu teléfono y correo rápidamente._`;
+    await sendTelegram(chatId, token, message, 'Markdown');
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /id
+  // COMANDO: /id (Perfil Ejecutivo / CV)
   if (text === '/id') {
-    const vcardUrl = 'https://hjalmarmeza.github.io/vcard/';
     const portfolioUrl = 'https://hjalmarmeza.github.io/cv/';
-    const message = `🪪 *TARJETA DIGITAL EJECUTIVA*\n\n` +
-                    `👤 *Hjalmar Meza*\n` +
-                    `🏢 Director de Proyectos & IA\n\n` +
-                    `🌐 [Portafolio Interactivo](${portfolioUrl})\n` +
-                    `📲 [Descargar vCard Móvil](${vcardUrl})\n\n` +
-                    `_Escanea tu propio código /qr para compartir este contacto en eventos físicos._`;
+    const message = `🪪 *ID: PERFIL EJECUTIVO INTERACTIVO*\n\n` +
+                    `Este es tu ecosistema profesional completo (CV Web).\n\n` +
+                    `🌐 [Ver Portafolio Elite](${portfolioUrl})\n\n` +
+                    `_Uso: Para enviar a reclutadores o clientes potenciales._`;
     await sendTelegram(chatId, token, message, 'Markdown');
     return res.status(200).send('OK');
   }
@@ -980,9 +984,6 @@ export default async function handler(req, res) {
       return res.status(200).send('OK');
     }
 
-    // Respondemos OK de inmediato para evitar reintentos de Telegram
-    res.status(200).send('OK');
-
     try {
       const response = await fetch(`${bridgeUrl}?token=${bridgeToken}&action=agenda`);
       const agendaText = await response.text();
@@ -991,7 +992,7 @@ export default async function handler(req, res) {
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error al conectar con tu Google Calendar.');
     }
-    return; // Ya respondimos arriba
+    return res.status(200).send('OK');
   }
 
   // COMANDO: /audit_drive (Google Drive via Apps Script)
