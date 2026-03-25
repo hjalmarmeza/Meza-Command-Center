@@ -926,8 +926,8 @@ export default async function handler(req, res) {
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /drive_audit (Google Drive via Apps Script)
-  if (text === '/drive_audit') {
+  // COMANDO: /audit_drive (Google Drive via Apps Script)
+  if (text === '/audit_drive') {
     const bridgeUrl = process.env.GOOGLE_SCRIPT_URL;
     const bridgeToken = process.env.GOOGLE_BRIDGE_TOKEN;
 
@@ -943,6 +943,8 @@ export default async function handler(req, res) {
       const response = await fetch(`${bridgeUrl}?token=${bridgeToken}&action=audit`);
       const auditText = await response.text();
       const finalMsg = auditText.trim() || '✅ Auditoría completada: No hay amenazas detectadas.';
+      
+      // Enviamos con Markdown explícito
       await sendTelegram(chatId, token, finalMsg, 'Markdown');
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error de conexión con tu auditoría de Google Drive.');
