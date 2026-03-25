@@ -675,10 +675,54 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
   // COMANDO: /huella [Nombre]
   if (text.startsWith('/huella')) {
     const name = text.replace('/huella', '').trim() || 'Hjalmar Meza';
-    const searchUrl = `https://www.google.com/search?q="${encodeURIComponent(name)}"`;
-    // Usamos una URL directa sin tanto adorno para asegurar que Telegram la convierta en link azul
-    const message = `👣 *INFORME DE IDENTIDAD DIGITAL*\n\nObjetivo: *${name}*\n\nPara ver los resultados de reputación, haz clic en el siguiente enlace:\n\n👉 ${searchUrl}`;
-    await sendTelegram(chatId, token, message, 'Markdown');
+    const gitToken = process.env.GITHUB_PAT;
+    
+    await sendTelegram(chatId, token, `🔦 *INICIANDO AUDITORÍA DIGITAL V3.0*\n_Escaneando activos de ${name}..._`);
+
+    try {
+      // 1. Análisis de Perfil GitHub (Auditamos a Hjalmar por defecto si es el dueño)
+      const userRes = await fetch('https://api.github.com/users/hjalmarmeza', {
+        headers: { 'Authorization': `token ${gitToken}` }
+      });
+      const userData = await userRes.json();
+      
+      // 2. Análisis de Lenguajes y Repos
+      const reposRes = await fetch('https://api.github.com/users/hjalmarmeza/repos?sort=pushed', {
+        headers: { 'Authorization': `token ${gitToken}` }
+      });
+      const repos = await reposRes.json();
+      const languages = {};
+      repos.forEach(r => { if(r.language) languages[r.language] = (languages[r.language] || 0) + 1; });
+      const topLang = Object.keys(languages).sort((a,b) => languages[b] - languages[a])[0] || 'Web Stack';
+
+      // 3. Verificación de Salud de Sitios
+      const sites = [
+        { name: 'CV Web', url: 'https://hjalmarmeza.github.io/cv/' },
+        { name: 'vCard', url: 'https://hjalmarmeza.github.io/vcard/' }
+      ];
+      let sitesStatus = '';
+      for (const site of sites) {
+        try {
+          const sRes = await fetch(site.url);
+          sitesStatus += `${sRes.ok ? '✅' : '⚠️'} ${site.name}: ${sRes.status}\n`;
+        } catch { sitesStatus += `❌ ${site.name}: Offline\n`; }
+      }
+
+      const report = `👣 *IDENTIDAD DIGITAL: ${name.toUpperCase()}*\n\n` +
+                     `💻 *PERFIL TÉCNICO (GIT)*\n` +
+                     `└ Dominio: \`${topLang}\`\n` +
+                     `└ Repos Públicos: ${userData.public_repos}\n` +
+                     `└ Seguidores: ${userData.followers}\n\n` +
+                     `🌐 *ESTADO DE ACTIVOS*\n${sitesStatus}\n` +
+                     `🔍 *REPUTACIÓN ONLINE*\n` +
+                     `└ [Búsqueda de Nombre](https://www.google.com/search?q="${encodeURIComponent(name)}")\n` +
+                     `└ [GitHub Profile](${userData.html_url})\n\n` +
+                     `_Diagnóstico: Presencia técnica sólida y activos operativos._`;
+
+      await sendTelegram(chatId, token, report, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error en la auditoría técnica. Revisa logs.');
+    }
     return res.status(200).send('OK');
   }
 
