@@ -920,9 +920,9 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // Fallback para comandos no reconocidos
+  // Fallback para comandos no reconocidos (Solo si ningún if anterior hizo return)
   if (text.startsWith('/')) {
-    await sendTelegram(chatId, token, 'Comando no reconocido todavía. Estamos activando los módulos uno a uno. Prueba con /comandos.');
+    await sendTelegram(chatId, token, '🤖 *Módulo en desarrollo o comando no reconocido.*\nPrueba con /comandos para ver todas las funciones activas del centro de mando.');
   }
 
   return res.status(200).send('OK');
