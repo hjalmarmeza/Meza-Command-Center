@@ -142,14 +142,20 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       location = query.substring(commaIndex + 1).trim();
     }
 
-    // URL simplificada: LinkedIn usa mejor el texto que los IDs de API que a veces se expanden
-    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(location)}&f_TPR=r2592000`;
+    // Refuerzo de localización para evitar México: Traducimos nombres comunes a formatos que LinkedIn prefiere
+    let finalLocation = location;
+    if (location.toUpperCase().includes('ESP')) {
+      // Formato canónico que LinkedIn no confunde con México
+      finalLocation = location.toUpperCase().includes('SALAMANCA') ? 'Salamanca, Castile and Leon, Spain' : 'Spain';
+    }
+
+    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(finalLocation)}&f_TPR=r2592000`;
     
-    const jobMsg = `💼 *RECLUTAMIENTO DIRECTO*\n\n` +
+    const jobMsg = `💼 *RECLUTAMIENTO EJECUTIVO*\n\n` +
                    `🛠️ *Perfil:* ${keywords}\n` +
                    `📍 *Localización:* ${location || 'Global'}\n\n` +
                    `👉 [Ver ofertas en LinkedIn](${searchUrl})\n\n` +
-                   `_Búsqueda optimizada por coincidencia de texto._`;
+                   `_Búsqueda forzada por región geográfica._`;
 
     await sendTelegram(chatId, token, jobMsg, 'Markdown');
     return res.status(200).send('OK');
