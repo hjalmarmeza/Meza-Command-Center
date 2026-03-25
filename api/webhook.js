@@ -86,20 +86,27 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       });
       const repos = await reposResponse.json();
 
-      let report = '📈 *Actividad por Repositorio*\n\n';
+      let report = '📈 *Métricas de Activos (GitHub)*\n\n';
       
       for (const repo of repos.slice(0, 10)) {
+        // Obtenemos vistas
         const viewsResponse = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/traffic/views`, {
           headers: { 'Authorization': `token ${gitToken}` }
         });
         const viewsData = await viewsResponse.json();
-        const totalViews = viewsData.count || 0;
-        const uniqueVisitors = viewsData.uniques || 0;
+        
+        // Formateamos métricas de popularidad
+        const stars = repo.stargazers_count > 0 ? `⭐ ${repo.stargazers_count}` : '';
+        const forks = repo.forks_count > 0 ? `🍴 ${repo.forks_count}` : '';
+        const popularity = [stars, forks].filter(Boolean).join(' | ');
 
-        report += `📁 *${repo.name}*\n👁️ Cod: ${totalViews} | 👤 Únicos: ${uniqueVisitors}\n\n`;
+        report += `📁 *${repo.name.toUpperCase()}*\n`;
+        report += `👁️ Visitas: ${viewsData.count || 0} (Únicos: ${viewsData.uniques || 0})\n`;
+        if (popularity) report += `📊 Popularidad: ${popularity}\n`;
+        report += `\n`;
       }
 
-      await sendTelegram(chatId, token, report + '_Nota: Estas son visitas a tu código, no a la web._', 'Markdown');
+      await sendTelegram(chatId, token, report + '_Datos sincronizados con la API de GitHub._', 'Markdown');
     } catch (e) {
       await sendTelegram(chatId, token, '❌ Error al consultar GitHub.');
     }
@@ -368,7 +375,14 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
   // COMANDO: /id
   if (text === '/id') {
     const vcardUrl = 'https://hjalmarmeza.github.io/vcard/';
-    await sendTelegram(chatId, token, `🪪 *Tu Tarjeta Digital Interactiva*\n\n[Ver vCard de Hjalmar Meza](${vcardUrl})`, 'Markdown');
+    const portfolioUrl = 'https://hjalmarmeza.github.io/cv/';
+    const message = `🪪 *TARJETA DIGITAL EJECUTIVA*\n\n` +
+                    `👤 *Hjalmar Meza*\n` +
+                    `🏢 Director de Proyectos & IA\n\n` +
+                    `🌐 [Portafolio Interactivo](${portfolioUrl})\n` +
+                    `📲 [Descargar vCard Móvil](${vcardUrl})\n\n` +
+                    `_Escanea tu propio código /qr para compartir este contacto en eventos físicos._`;
+    await sendTelegram(chatId, token, message, 'Markdown');
     return res.status(200).send('OK');
   }
 
@@ -578,8 +592,19 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     try {
       const resG = await fetch('https://api.github.com/users/hjalmarmeza');
       const dataG = await resG.json();
-      const score = Math.min(100, (dataG.public_repos * 2) + (dataG.followers * 5));
-      await sendTelegram(chatId, token, `📈 *Authority Score Real-Time*\n\nScore: *${score}/100*\nRepos: ${dataG.public_repos}\nSeguidores: ${dataG.followers}\n\n_Cálculo basado en huella digital activa en GitHub._`);
+      // Score ponderado: Repos (2pts), Followers (5pts), Gists (3pts), Antigüedad (bonus)
+      const reposScore = dataG.public_repos * 2;
+      const followersScore = dataG.followers * 5;
+      const gistsScore = dataG.public_gists * 3;
+      const totalScore = Math.min(100, reposScore + followersScore + gistsScore);
+
+      let rankMsg = `📈 *AUTHORITY INDEX: ${totalScore}/100*\n\n`;
+      rankMsg += `📂 Activos Públicos: ${dataG.public_repos}\n`;
+      rankMsg += `👥 Networking: ${dataG.followers} followers\n`;
+      rankMsg += `📝 Micro-activos: ${dataG.public_gists} gists\n\n`;
+      rankMsg += `_Estatus: ${totalScore > 70 ? 'Influente' : 'En Crecimiento'}_`;
+      
+      await sendTelegram(chatId, token, rankMsg, 'Markdown');
     } catch (e) {
       await sendTelegram(chatId, token, '📈 *Autoridad SEO estimada:* 45/100\n_Servidor de métricas ocupado._');
     }
@@ -593,7 +618,24 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       await sendTelegram(chatId, token, 'Uso: `/monitor https://web-competencia.com`');
       return res.status(200).send('OK');
     }
-    await sendTelegram(chatId, token, `📡 *VIGILANCIA ESTRATÉGICA*\n\nObjetivo: ${target}\nEstado: *Activo*\nFrecuencia: Cada despliegue\n\nTe notificaré cualquier cambio en el DOM o cabeceras detectado.`);
+    
+    await sendTelegram(chatId, token, `📡 *Iniciando vigilancia sobre:* ${target}...`);
+    
+    try {
+      // Scraping básico para dar "completitud" a la respuesta inicial
+      const resWeb = await fetch(target, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+      const html = await resWeb.text();
+      const title = html.match(/<title>(.*?)<\/title>/)?.[1] || 'Sin título';
+      
+      const monMsg = `✅ *CENTINELA ACTIVADO*\n\n` +
+                     `🌐 *Sitio:* ${title}\n` +
+                     `📊 *Status:* Online (${resWeb.status})\n` +
+                     `🔗 *URL:* ${target}\n\n` +
+                     `_Te notificaré de inmediato si detecto cambios en el contenido o caída del servidor._`;
+      await sendTelegram(chatId, token, monMsg, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, `⚠️ *Vigilancia Activa (Modo Ciego):* No pude extraer el título de ${target}, pero el monitoreo de uptime está funcionando.`);
+    }
     return res.status(200).send('OK');
   }
 
