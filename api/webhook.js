@@ -29,7 +29,6 @@ export default async function handler(req, res) {
 
   // Menú de Comandos (Guía Maestra)
   if (text === '/comandos') {
-    // ... (ayuda omitida por brevedad en este chunk)
     const helpMenu = `🤖 *Guía de Mando - Meza Command Center*
 
 *📊 Monitoreo y Salud*
@@ -37,31 +36,33 @@ export default async function handler(req, res) {
 - /health: Estado 'Online' de tus 20 webs.
 - /briefing: Reporte diario IA/Divisas/Tráfico.
 - /board_report: Informe estratégico semanal.
+- /ping: Test de latencia del sistema.
+- /uptime: Tiempo de vida del servidor.
 
 *🔍 Inteligencia y Estrategia*
 - /research [Query]: Buscador de leads y directivos.
-- /jobs [Puesto]: Buscador de empleo filtrado (Costo 0).
+- /jobs [Puesto]: Buscador de empleo filtrado.
 - /news: Noticias IA y Logística.
-- /divisas: Conversor de moneda real (EUR/USD/COP).
-- /trends [País]: Lo más hablado hoy (ES/MX/CO).
-- /estrategia: Modelos mentales para directivos.
+- /trends [País]: Lo más hablado hoy.
+- /clima [Ciudad]: Reporte meteorológico real.
+- /dolar / /euro: Cambio de divisas prioritarias.
+- /crypto: Monitor de activos digitales.
 
 *🛠️ Marca y Activos*
 - /short [URL]: Acortador personalizado.
 - /qr [URL]: Generador de QR profesional.
-- /check_links: Detective de enlaces rotos en CV.
-- /huella [Nombre]: Rastreador de reputación online.
+- /check_links: Detective de enlaces rotos.
+- /huella [Nombre]: Rastreador de reputación OSINT.
 - /id: Tu tarjeta digital interactiva.
 
 *💻 Gestión e Infraestructura*
 - /tech [Repo]: Auditoría de stack tecnológico.
 - /rank: Autoridad SEO de tus sitios.
-- /monitor [URL]: Vigilancia de cambios en competencia.
-- /audit_all: Seguridad global de tus 20 repos.
-- /chatbot_on / _off: Control remoto de tu CV.
+- /monitor [URL]: Vigilancia de cambios.
+- /audit_all: Seguridad global de tus repos.
+- /chatbot_on / _off: Control remoto del CV.
 - /git: Pulso de código semanal.
-- /backup: Descarga segura en .zip.
-- /new_project [Nombre]: Crea un repositorio al instante.
+- /clear: Limpieza visual del chat.
 
 ---
 _Escribe /comandos en cualquier momento para volver aquí_`;
