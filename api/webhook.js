@@ -41,24 +41,20 @@ export default async function handler(req, res) {
                      `• /stats: Tráfico de proyectos\n` +
                      `• /health: Estado de tus webs\n` +
                      `• /briefing: Reporte diario\n` +
-                     `• /board_report: Informe semanal\n` +
-                     `• /ping: Latencia / /uptime: Servidor\n\n` +
+                     `• /board_report: Informe semanal\n\n` +
+                     `📂 *Gestión y Productividad (Google)*\n` +
+                     `• /hoy: Tu agenda del día\n` +
+                     `• /drive_audit: Archivos públicos\n\n` +
                      `🔍 *Inteligencia y Estrategia*\n` +
-                     `• /research: Leads / /jobs: Empleo\n` +
                      `• /news: IA y Logística\n` +
                      `• /trends: Lo más hablado\n` +
-                     `• /clima: Reporte ciudad\n` +
                      `• /dolar / /euro / /crypto: Activos\n\n` +
-                     `🛠️ *Marca y Activos*\n` +
-                     `• /short: Acortador / /qr: QR Directo\n` +
-                     `• /huella: OSINT / /vcard: Tarjeta Digital\n` +
-                     `• /check_links: Detective enlaces\n\n` +
-                     `💻 *Gestión e Infraestructura*\n` +
-                     `• /tech: Auditoría / /rank: SEO\n` +
-                     `• /audit_all: Seguridad Global\n` +
-                     `• /chatbot_on: Control CV\n\n` +
+                     `🛠️ *Marca y Seguridad*\n` +
+                     `• /qr: QR Directo / /huella: OSINT\n` +
+                     `• /vcard: Tarjeta Digital\n` +
+                     `• /audit_all: Seguridad Global\n\n` +
                      `--- \n` +
-                     `_Motor v4.6 - Activo y Sincronizado_`;
+                     `_Motor v5.0 - Google Workspace Lite_`;
     
     await sendTelegram(chatId, token, helpMenu, 'Markdown');
     return res.status(200).send('OK');
@@ -908,18 +904,45 @@ export default async function handler(req, res) {
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /backup
-  if (text === '/backup') {
-    const backupLink = 'https://github.com/hjalmarmeza/Meza-Command-Center/archive/refs/heads/main.zip';
-    await sendTelegram(chatId, token, `📦 *Copia de Seguridad Pro*\n\n[Descargar respaldo actual (.zip)](${backupLink})`, 'Markdown');
+  // COMANDO: /hoy o /agenda (Google Calendar via Apps Script)
+  if (text === '/hoy' || text === '/agenda') {
+    const bridgeUrl = process.env.GOOGLE_SCRIPT_URL;
+    const bridgeToken = "TU_TOKEN_AQUÍ"; // Debe coincidir con el del script
+
+    if (!bridgeUrl) {
+      await sendTelegram(chatId, token, '⚠️ Falta configurar GOOGLE_SCRIPT_URL en Vercel.');
+      return res.status(200).send('OK');
+    }
+
+    try {
+      const response = await fetch(`${bridgeUrl}?token=${bridgeToken}&action=agenda`);
+      const agendaText = await response.text();
+      await sendTelegram(chatId, token, agendaText);
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error al conectar con tu Google Calendar.');
+    }
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /new_project [Nombre]
-  if (text.startsWith('/new_project')) {
-    const pName = text.replace('/new_project', '').trim();
-    const createUrl = `https://github.com/new?name=${encodeURIComponent(pName)}`;
-    await sendTelegram(chatId, token, `🚀 *INICIADOR DE PROYECTOS*\n\nSe ha configurado la plantilla para: *${pName || 'Nuevo Proyecto'}*\n\n👉 [Haz clic aquí para crear el repositorio](${createUrl})`, 'Markdown');
+  // COMANDO: /drive_audit (Google Drive via Apps Script)
+  if (text === '/drive_audit') {
+    const bridgeUrl = process.env.GOOGLE_SCRIPT_URL;
+    const bridgeToken = "TU_TOKEN_AQUÍ"; // Debe coincidir con el del script
+
+    if (!bridgeUrl) {
+      await sendTelegram(chatId, token, '⚠️ Falta configurar GOOGLE_SCRIPT_URL en Vercel.');
+      return res.status(200).send('OK');
+    }
+
+    await sendTelegram(chatId, token, '🔍 Policiando tu Google Drive...');
+
+    try {
+      const response = await fetch(`${bridgeUrl}?token=${bridgeToken}&action=audit`);
+      const auditText = await response.text();
+      await sendTelegram(chatId, token, auditText);
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error al auditar tu Google Drive.');
+    }
     return res.status(200).send('OK');
   }
 
@@ -932,14 +955,14 @@ export default async function handler(req, res) {
                     `🏢 Director de Proyectos & IA\n\n` +
                     `🌐 [Portafolio Interactivo](${portfolioUrl})\n` +
                     `📲 [Descargar vCard Móvil](${vcardUrl})\n\n` +
-                    `_Versión del Sistema: 4.5 EX (Live)_`;
+                    `_Versión del Sistema: 5.0 (Google Workspace Edition)_`;
     await sendTelegram(chatId, token, message, 'Markdown');
     return res.status(200).send('OK');
   }
 
   // Fallback para comandos no reconocidos
   if (text.startsWith('/')) {
-    await sendTelegram(chatId, token, '🤖 *Comando no reconocido en esta versión (v4.5).* \nUsa /comandos para ver las funciones activas del motor actual.');
+    await sendTelegram(chatId, token, '🤖 *Comando no reconocido en esta versión (v5.0).* \nUsa /comandos para ver las funciones activas del motor actual.');
   }
 
   return res.status(200).send('OK');
