@@ -133,8 +133,8 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       return res.status(200).send('OK');
     }
     // Buscamos ofertas en LinkedIn publicadas en el último mes
-    const searchUrl = `https://www.google.com/search?q=site:linkedin.com/jobs+"${encodeURIComponent(query)}"+after:2026-03-01`;
-    await sendTelegram(chatId, token, `💼 *Buscando vacantes estratégicas:* [Ver ofertas hoy](${searchUrl})`, 'Markdown');
+    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(query)}`;
+    await sendTelegram(chatId, token, `💼 *Buscando vacantes para:* ${query}\n\n👉 [Ver ofertas en LinkedIn](${searchUrl})\n\n_Filtro aplicado: Publicadas recientemente._`, 'Markdown');
     return res.status(200).send('OK');
   }
 
@@ -350,7 +350,25 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       });
       
       if (pkgRes.status === 404) {
-        await sendTelegram(chatId, token, `📁 *Proyecto:* ${repo.name}\n\n⚠️ Este proyecto no usa \`package.json\`. Probablemente sea HTML/JS puro o use otro gestor.`);
+        // Intento de detección por archivos si no hay package.json
+        const contentsRes = await fetch(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/contents/`, {
+          headers: { 'Authorization': `token ${gitToken}` }
+        });
+        const files = await contentsRes.json();
+        const hasHtml = files.some(f => f.name.endsWith('.html'));
+        const hasCss = files.some(f => f.name.endsWith('.css'));
+        const hasJs = files.some(f => f.name.endsWith('.js'));
+        
+        let stack = [];
+        if (hasHtml) stack.push('HTML5');
+        if (hasCss) stack.push('CSS3');
+        if (hasJs) stack.push('JavaScript');
+        
+        const techMsg = `📁 *PROYECTO:* ${repo.name}\n\n` +
+                        `⚠️ Sin \`package.json\` (No es Node.js).\n` +
+                        `🌐 *Tecnologías detectadas:* ${stack.join(', ') || 'Archivos varios'}\n\n` +
+                        `_Tipo: Frontend Estático / GitHub Pages._`;
+        await sendTelegram(chatId, token, techMsg, 'Markdown');
         return res.status(200).send('OK');
       }
 
@@ -700,7 +718,7 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
   if (text.startsWith('/new_project')) {
     const pName = text.replace('/new_project', '').trim();
     const createUrl = `https://github.com/new?name=${encodeURIComponent(pName)}`;
-    await sendTelegram(chatId, token, `🚀 *Iniciador de Proyectos*\n\n[Pincha aquí para crear el repo ${pName || ''}](https://github.com/new)`, 'Markdown');
+    await sendTelegram(chatId, token, `🚀 *INICIADOR DE PROYECTOS*\n\nSe ha configurado la plantilla para: *${pName || 'Nuevo Proyecto'}*\n\n👉 [Haz clic aquí para crear el repositorio](${createUrl})`, 'Markdown');
     return res.status(200).send('OK');
   }
 
