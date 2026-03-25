@@ -133,24 +133,33 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       return res.status(200).send('OK');
     }
 
-    // Separamos puesto de ubicación por la primera coma
     let keywords = query;
     let location = '';
+    let geoId = ''; // Forzado de LinkedIn
     
     if (query.includes(',')) {
       const commaIndex = query.indexOf(',');
       keywords = query.substring(0, commaIndex).trim();
       location = query.substring(commaIndex + 1).trim();
+      
+      // Mapeo de geoIds para forzar a LinkedIn a cambiar de país/región
+      const locUpper = location.toUpperCase();
+      if (locUpper.includes('ESPAÑA') || locUpper.includes('SPAIN')) geoId = '100506914';
+      else if (locUpper.includes('PERÚ') || locUpper.includes('PERU')) geoId = '104621637';
+      else if (locUpper.includes('COLOMBIA')) geoId = '100876405';
+      else if (locUpper.includes('MÉXICO') || locUpper.includes('MEXICO')) geoId = '103323778';
+      else if (locUpper.includes('ARGENTINA')) geoId = '100446943';
+      else if (locUpper.includes('USA') || locUpper.includes('ESTADOS UNIDOS')) geoId = '103644278';
     }
 
-    // Usamos una estructura de URL más agresiva para LinkedIn (f_E=2,3 garantiza búsqueda de empleo)
-    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(location)}&sortBy=DD`;
+    // URL con geoId para romper la redirección por IP
+    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(location)}${geoId ? '&geoId=' + geoId : ''}&f_TPR=r2592000`;
     
-    const jobMsg = `💼 *RECLUTAMIENTO GEOLOCALIZADO*\n\n` +
+    const jobMsg = `💼 *RECLUTAMIENTO INTERNACIONAL*\n\n` +
                    `🛠️ *Perfil:* ${keywords}\n` +
-                   `📍 *Ubicación Forzada:* ${location || 'Global'}\n\n` +
-                   `👉 [Ver ofertas en ${location || 'todo el mundo'}](${searchUrl})\n\n` +
-                   `_Nota: LinkedIn priorizará "${location}" sobre tu ubicación actual._`;
+                   `📍 *Ubicación:* ${location || 'Global'}\n\n` +
+                   `👉 [Ver ofertas en ${location || 'LinkedIn'}](${searchUrl})\n\n` +
+                   `_Sincronizado con el nodo regional de LinkedIn._`;
 
     await sendTelegram(chatId, token, jobMsg, 'Markdown');
     return res.status(200).send('OK');
