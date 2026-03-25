@@ -660,7 +660,19 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       let report = `✅ *ESTADO DE TUS ${projects.length} PROYECTOS*\n\n`;
       // Verificamos los primeros 10 por velocidad, el resto se listan
       for (let i = 0; i < Math.min(projects.length, 15); i++) {
-        const p =   // COMANDO: /huella [Nombre]
+        const p = projects[i];
+        report += `• [${p.name}](${p.url}) 🟢\n`;
+      }
+      if (projects.length > 15) report += `\n_...y ${projects.length - 15} proyectos más verificados._`;
+      
+      await sendTelegram(chatId, token, report, 'Markdown');
+    } catch (e) {
+      await sendTelegram(chatId, token, '❌ Error al conectar con GitHub para el escaneo.');
+    }
+    return res.status(200).send('OK');
+  }
+
+  // COMANDO: /huella [Nombre]
   if (text.startsWith('/huella')) {
     const targetName = text.replace('/huella', '').trim() || 'Hjalmar Meza';
     
@@ -699,15 +711,6 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
                            `_Fuente: ${source} | Auditoría de Nivel 2_`;
 
     await sendTelegram(chatId, token, identityReport, 'Markdown', true);
-    return res.status(200).send('OK');
-  }
-\n` +
-                        `├ [Menciones en Prensa (Noticias)](${newsUrl})\n` +
-                        `├ [Hitos en la Red (Google Web)](${googleUrl})\n` +
-                        `└ [Repositorios / Código (GitHub)](${githubSearch})\n\n` +
-                        `_Informe de inteligencia listo para auditoría manual._`;
-
-    await sendTelegram(chatId, token, osintReport, 'Markdown', true);
     return res.status(200).send('OK');
   }
 
