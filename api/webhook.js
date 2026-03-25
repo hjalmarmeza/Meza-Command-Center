@@ -135,28 +135,21 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
 
     let keywords = query;
     let location = '';
-    let geoId = '';
     
     if (query.includes(',')) {
       const commaIndex = query.indexOf(',');
       keywords = query.substring(0, commaIndex).trim();
       location = query.substring(commaIndex + 1).trim();
-      
-      const locUpper = location.toUpperCase();
-      if (locUpper.includes('ESPAÑA') || locUpper.includes('SPAIN')) geoId = '100506914';
-      else if (locUpper.includes('PERÚ') || locUpper.includes('PERU')) geoId = '104621637';
-      else if (locUpper.includes('COLOMBIA')) geoId = '100876405';
-      else if (locUpper.includes('MÉXICO') || locUpper.includes('MEXICO')) geoId = '103323778';
     }
 
-    // URL con geoId para romper la IP y f_WT=0 para forzar presencialidad local
-    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(location)}${geoId ? '&geoId=' + geoId : ''}&f_TPR=r2592000&f_WT=0`;
+    // URL simplificada: LinkedIn usa mejor el texto que los IDs de API que a veces se expanden
+    const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&location=${encodeURIComponent(location)}&f_TPR=r2592000`;
     
-    const jobMsg = `💼 *RECLUTAMIENTO GEOLOCALIZADO*\n\n` +
+    const jobMsg = `💼 *RECLUTAMIENTO DIRECTO*\n\n` +
                    `🛠️ *Perfil:* ${keywords}\n` +
                    `📍 *Localización:* ${location || 'Global'}\n\n` +
                    `👉 [Ver ofertas en LinkedIn](${searchUrl})\n\n` +
-                   `_Sincronizado con el servidor regional de España._`;
+                   `_Búsqueda optimizada por coincidencia de texto._`;
 
     await sendTelegram(chatId, token, jobMsg, 'Markdown');
     return res.status(200).send('OK');
