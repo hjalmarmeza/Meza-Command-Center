@@ -715,7 +715,13 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
       } else {
         // --- RASTREO OSINT EXTERNO (Cualquier Persona) ---
         const googleUrl = `https://www.google.com/search?q="${encodeURIComponent(targetName)}"`;
-        const linkedinUrl = `https://www.linkedin.com/pub/dir?firstName=${encodeURIComponent(targetName.split(' ')[0])}&lastName=${encodeURIComponent(targetName.split(' ').slice(1).join(' '))}&trp=2`;
+        
+        // Split inteligente para nombres compuestos: Primera palabra=Nombre, Resto=Apellidos
+        const nameParts = targetName.split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        const linkedinUrl = `https://www.linkedin.com/pub/dir?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&trp=2`;
         
         const osintMsg = `🕵️‍♂️ *INVESTIGACIÓN OSINT*\n\n` +
                          `👤 *Objetivo:* ${targetName}\n\n` +
