@@ -60,7 +60,7 @@ export default async function handler(req, res) {
                      `• /chatbot_on-off / /clear: Limpiar / /url: Acortar\n` +
                      `• /clima [Ciudad]: Reporte METAR\n` +
                      `• /briefing: Reporte diario / /board_report: Semanal\n\n` +
-                     `_Estatus: 31 Comandos Activos. Usa /help para reconsultar._`;
+      `_Estatus: 31 Comandos Activos en Motor v5.3. Usa /help para reconsultar._`;
     
     await sendTelegram(chatId, token, helpMenu, 'Markdown');
     return res.status(200).send('OK');
