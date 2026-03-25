@@ -322,15 +322,40 @@ _Escribe /comandos en cualquier momento para volver aquí_`;
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /qr [URL]
+  // COMANDO: /qr [URL], [ColorFront], [ColorBack]
   if (text.startsWith('/qr')) {
-    const url = text.replace('/qr', '').trim();
-    if (!url) {
-      await sendTelegram(chatId, token, 'Uso: `/qr https://tuweb.com`');
+    const input = text.replace('/qr', '').trim();
+    if (!input) {
+      await sendTelegram(chatId, token, 'Uso: `/qr https://web.com, gold, black`');
       return res.status(200).send('OK');
     }
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}&color=D4AF37&bgcolor=0a1120&qzone=2&format=png`;
-    await sendTelegram(chatId, token, `🖼️ *Generador de QR Premium*\n\n[📥 Toca aquí para ver o descargar tu QR](${qrUrl})\n\n_Optimizado para escaneo en vCard y eventos._`, 'Markdown');
+
+    const parts = input.split(',');
+    const url = parts[0].trim();
+    let fg = parts[1] ? parts[1].trim() : 'D4AF37'; // Dorado por defecto
+    let bg = parts[2] ? parts[2].trim() : '0a1120'; // Azul oscuro por defecto
+
+    // Limpieza de colores (si el usuario pone # lo quitamos para la API)
+    const cleanCol = (c) => {
+      const colors = {
+        'red': 'FF0000', 'blue': '0000FF', 'green': '00FF00', 'black': '000000', 
+        'white': 'FFFFFF', 'gold': 'D4AF37', 'silver': 'C0C0C0', 'rojo': 'FF0000',
+        'azul': '0000FF', 'verde': '00FF00', 'negro': '000000', 'blanco': 'FFFFFF'
+      };
+      let val = c.toLowerCase().replace('#', '');
+      return colors[val] || val;
+    };
+
+    const finalFg = cleanCol(fg);
+    const finalBg = cleanCol(bg);
+
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}&color=${finalFg}&bgcolor=${finalBg}&qzone=2&format=png`;
+    
+    await sendTelegram(chatId, token, `🖼️ *GENERADOR DE QR PERSONALIZADO*\n\n` +
+                                    `🔗 *Destino:* ${url}\n` +
+                                    `🎨 *Estilo:* ${fg} sobre ${bg}\n\n` +
+                                    `👉 [Toca aquí para ver tu QR](${qrUrl})\n\n` +
+                                    `_Formato: URL, Color, Fondo_`, 'Markdown');
     return res.status(200).send('OK');
   }
 
