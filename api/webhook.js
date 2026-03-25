@@ -547,28 +547,41 @@ export default async function handler(req, res) {
     return res.status(200).send('OK');
   }
 
-  // COMANDO: /estrategia (Mentoría Táctica)
+  // COMANDO: /estrategia (Protocolo de Consultoría Ejecutiva)
   if (text === '/estrategia') {
-    const frameworks = [
+    const protocols = [
       {
-        t: "🚀 *Growth Hacking:* AARRR",
-        d: "Adquisición, Activación, Retención, Referencia, Ingresos. ¿En qué etapa estás fallando hoy?"
+        t: "🌀 *FLYWHWEE DE CRECIMIENTO (Amazon Model)*",
+        d: "No busques 'ventas' aisladas. Crea un círculo virtuoso: Menores Precios → Mejor Experiencia → Más Tráfico → Más Vendedores → Menos Costes.",
+        a: "¿Qué parte de tu proceso actual no está alimentando al siguiente paso?"
       },
       {
-        t: "🛡️ *Gestión de Crisis:* Matriz de Eisenhower",
-        d: "Diferencia lo **Urgente** de lo **Importante**. Si no es importante, delégalo o elíminalo."
+        t: "🎯 *PENSAMIENTO DE PRIMEROS PRINCIPIOS*",
+        d: "Desglosa problemas complejos en sus verdades fundamentales. No razones por analogía ('así se hace siempre').",
+        a: "Si tuvieras que reconstruir tu proyecto hoy desde cero sin limitaciones, ¿qué harías diferente?"
       },
       {
-        t: "📈 *Escalabilidad:* Ley de Brooks",
-        d: "Añadir personal a un proyecto retrasado lo retrasa más. Optimiza procesos antes de contratar."
+        t: "🏗️ *PRINCIPIOS DE DISEÑO DE SISTEMAS (Ray Dalio)*",
+        d: "Mira tu organización como una máquina con causas y efectos. Si los resultados no son buenos, ajusta el diseño o las personas.",
+        a: "Identifica el fallo recurrente de esta semana. ¿Es un fallo de diseño o de ejecución?"
       },
       {
-        t: "🏢 *Cultura Directiva:* High Output Management",
-        d: "Un manager solo produce mediante sus equipos. Tu métrica es el ratio de salida de tu unidad."
+        t: "🛡️ *MATRIZ DE DECISIONES DE EISENHOWER*",
+        d: "Clasifica por Urgencia vs Importancia. El 80% de tu impacto viene de las tareas 'Importantes No Urgentes'.",
+        a: "Mira tu agenda de mañana: Elimina 2 tareas 'Urgentes pero irrelevantes'."
+      },
+      {
+        t: "🚀 *LEY DE LOS RENDIMIENTOS DECRECIENTES*",
+        d: "Llega un punto donde añadir más recursos (tiempo/dinero) reduce el beneficio por cada unidad invertida.",
+        a: "¿Estás puliendo algo que ya es funcional al 95%? Detente y escala el siguiente módulo."
       }
     ];
-    const item = frameworks[Math.floor(Math.random() * frameworks.length)];
-    const msg = `🎯 *Protocolo de Mentoría Ejecutiva*\n\n${item.t}\n\n💡 *Acción:* ${item.d}\n\n_Manual táctico para directores._`;
+    const item = protocols[Math.floor(Math.random() * protocols.length)];
+    const msg = `🏛️ *CONSULTORÍA ESTRATÉGICA ELITE*\n\n` +
+                 `${item.t}\n\n` +
+                 `📖 *Concepto:* ${item.d}\n\n` +
+                 `💡 *Acción Inmediata:* ${item.a}\n\n` +
+                 `_Mando v5.1 - Inteligencia de Negocios_`;
     await sendTelegram(chatId, token, msg, 'Markdown');
     return res.status(200).send('OK');
   }
