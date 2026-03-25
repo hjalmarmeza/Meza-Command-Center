@@ -962,3 +962,24 @@ async function sendTelegram(chatId, token, text, parseMode = '', disableWebPageP
     console.error('Error enviando a Telegram:', e);
   }
 }
+
+// Función auxiliar para enviar fotos/imágenes a Telegram
+async function sendPhoto(chatId, token, photoUrl, caption = '') {
+  const url = `https://api.telegram.org/bot${token}/sendPhoto`;
+  const body = {
+    chat_id: chatId,
+    photo: photoUrl,
+    caption: caption,
+    parse_mode: 'Markdown'
+  };
+
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  } catch (e) {
+    console.error('Error enviando foto a Telegram:', e);
+  }
+}
