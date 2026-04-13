@@ -1,6 +1,5 @@
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 module.exports = async function (req, res) {
     // Respuesta rápida a Vercel
@@ -23,15 +22,7 @@ module.exports = async function (req, res) {
     }
 
     if (text === '/start' || text === '/comandos') {
-        await sendTelegramMessage(chatId, "🤖 *SentryMezabot v3.0*\n\nComandos:\n/status - Radar de Proyectos (GitHub)\n/vcard - Mi tarjeta digital\n/qr [url] - Genera un QR\n\n_O simplemente háblame..._");
-        return res.status(200).send('OK');
-    }
-
-    // --- NUEVO PODER: RADAR DE INFRAESTRUCTURA ---
-    if (text === '/status') {
-        await sendTelegramMessage(chatId, "🔎 *Escaneando infraestructura de Hjalmar Meza...*");
-        const statusReport = await getGitHubStatus();
-        await sendTelegramMessage(chatId, statusReport);
+        await sendTelegramMessage(chatId, "🤖 *SentryMezabot v2.5*\n\nComandos:\n/vcard - Mi tarjeta digital\n/qr [url] - Genera un QR\n\n_O simplemente háblame..._");
         return res.status(200).send('OK');
     }
 
@@ -72,38 +63,12 @@ module.exports = async function (req, res) {
         }
     } catch (e) {
         console.error("AI critical failure:", e);
+        // No enviamos nada al usuario para no saturar si es un error temporal,
+        // pero aseguramos que el servidor responda OK a Telegram.
     }
 
     return res.status(200).send('OK');
 };
-
-async function getGitHubStatus() {
-    if (!GITHUB_TOKEN) return "❌ *Error:* El GITHUB_TOKEN no está configurado en Vercel.";
-    
-    try {
-        const response = await fetch('https://api.github.com/user/repos?per_page=100&sort=updated', {
-            headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-        const repos = await response.json();
-        
-        if (!Array.isArray(repos)) return "❌ No pude obtener la lista de repositorios.";
-
-        let list = "🛰️ *REPORTE DE INFRAESTRUCTURA*\n\n";
-        repos.slice(0, 15).forEach(repo => {
-            const date = new Date(repo.updated_at).toLocaleDateString();
-            const emoji = repo.private ? '🔒' : '🌐';
-            list += `${emoji} *${repo.name}*\n└ Activo: ${date}\n🔗 [GitHub](${repo.html_url})\n\n`;
-        });
-
-        list += `\n_Escaneados ${repos.length} repositorios totales._`;
-        return list;
-    } catch (e) {
-        return "❌ Error al conectar con GitHub API.";
-    }
-}
 
 async function sendTelegramMessage(chatId, text) {
     const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
