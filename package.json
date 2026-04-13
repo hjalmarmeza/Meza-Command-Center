@@ -4,6 +4,7 @@
   "description": "Unified Digital Command Center for Hjalmar Meza",
   "main": "api/webhook.js",
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "node-fetch": "^3.3.0"
   },
   "scripts": {
