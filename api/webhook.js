@@ -13,11 +13,12 @@ module.exports = async function (req, res) {
 
     // 0. COMANDO START / COMANDOS
     if (text === '/start' || text === '/comandos') {
-        const menu = `🤖 *COMMAND CENTER v3.4*\n\n` +
+        const menu = `🤖 *COMMAND CENTER v3.5*\n\n` +
                      `🛰 *INFRAESTRUCTURA*\n` +
                      `• /status - Radar de GitHub\n` +
                      `• /url - Catálogo Horizon Hub (17)\n\n` +
                      `⚖ *UTILITARIOS PRO*\n` +
+                     `• /qr [enlace] - Generar Código QR\n` +
                      `• /dolar - Cambio USD / EUR / PEN\n` +
                      `• /clima [ciudad] - Estado del tiempo\n\n` +
                      `💎 *PERFIL*\n` +
@@ -27,14 +28,26 @@ module.exports = async function (req, res) {
         return res.status(200).send('OK');
     }
 
-    // 1. COMANDO /STATUS (RADAR GITHUB)
+    // 1. COMANDO /QR [URL]
+    if (text.startsWith('/qr')) {
+        const urlToConvert = message.text.replace(/\/qr/i, '').trim();
+        if (!urlToConvert) {
+            await sendTelegramMessage(chatId, "⚠️ Por favor, usa: \`/qr https://tu-enlace.com\`");
+        } else {
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(urlToConvert)}&color=0a1120&bgcolor=f59e0b`;
+            await sendTelegramPhoto(chatId, qrApiUrl, `✅ *QR GENERADO*\n🔗 ${urlToConvert}`);
+        }
+        return res.status(200).send('OK');
+    }
+
+    // 2. COMANDO /STATUS (RADAR GITHUB)
     if (text === '/status') {
         const statusReport = await getGitHubStatus();
         await sendTelegramMessage(chatId, statusReport);
         return res.status(200).send('OK');
     }
 
-    // 2. COMANDO /CLIMA
+    // 3. COMANDO /CLIMA
     if (text.startsWith('/clima')) {
         const city = text.replace('/clima', '').trim() || 'Salamanca, ES';
         try {
@@ -47,7 +60,7 @@ module.exports = async function (req, res) {
         return res.status(200).send('OK');
     }
 
-    // 3. COMANDO /DOLAR
+    // 4. COMANDO /DOLAR
     if (text === '/dolar') {
         try {
             const resp = await fetch('https://open.er-api.com/v6/latest/USD');
@@ -63,42 +76,19 @@ module.exports = async function (req, res) {
         return res.status(200).send('OK');
     }
 
-    // 4. COMANDO /URL (HORIZON HUB - FULL CATALOG)
+    // 5. COMANDO /URL (HORIZON HUB)
     if (text === '/url') {
         const catalog = `🌐 *ECOSISTEMA HORIZON HUB (17 PROYECTOS)*\n\n` +
-                        `🛰 *Geo & Telemetría*\n` +
-                        `• [Alerta Vecinal](https://hjalmarmeza.github.io/Alerta-Vecinal/)\n` +
-                        `• [GeoRadio](https://hjalmarmeza.github.io/Georadio/)\n\n` +
-                        `🧠 *Inteligencia Artificial & IA*\n` +
-                        `• [Vigilante AI](https://hjalmarmeza.github.io/Vigilante_Privacidad/)\n` +
-                        `• [MusiChris Studio](https://hjalmarmeza.github.io/MusiChris/)\n` +
-                        `• [VoxMind AI](https://hjalmarmeza.github.io/voxmind/)\n\n` +
-                        `🎙 *Voz & Idiomas*\n` +
-                        `• [Talk.Me](https://hjalmarmeza.github.io/Talk.Me/)\n` +
-                        `• [Jardim de Historia](https://hjalmarmeza.github.io/Jardim-de-historia/)\n\n` +
-                        `⚖ *Gestión & Negocios*\n` +
-                        `• [Kopilot](https://hjalmarmeza.github.io/Kopilot/)\n` +
-                        `• [Restaurante360](https://hjalmarmeza.github.io/Restaurant/)\n` +
-                        `• [Linkedinmatic](https://hjalmarmeza.github.io/Linkedinmatic/)\n\n` +
-                        `🎨 *Moda & Estética*\n` +
-                        `• [FaceCut](https://hjalmarmeza.github.io/Facecut/)\n` +
-                        `• [Style TARA](https://hjalmarmeza.github.io/Tara/)\n\n` +
-                        `🏥 *Salud e Inclusión*\n` +
-                        `• [Allimentate](https://hjalmarmeza.github.io/Allimentate/)\n` +
-                        `• [MoodWeather](https://hjalmarmeza.github.io/Moodweather/)\n` +
-                        `• [Chart Less](https://hjalmarmeza.github.io/chartless/)\n\n` +
-                        `🎮 *Interfaces & Control*\n` +
-                        `• [Allivision](https://hjalmarmeza.github.io/Allivision/)\n` +
-                        `• [HandRacer](https://hjalmarmeza.github.io/Handracer/)\n\n` +
-                        `💎 *Centrales*\n` +
-                        `• [Horizon Hub Dashboard](https://hjalmarmeza.github.io/Horizon_hub/)\n` +
-                        `• [CV Ejecutivo Elite](https://hjalmarmeza.github.io/cv/)\n\n` +
-                        `_Acceso total de producción._`;
+                        `🛰 *Geo & Telemetría*\n• [Alerta Vecinal](https://hjalmarmeza.github.io/Alerta-Vecinal/)\n• [GeoRadio](https://hjalmarmeza.github.io/Georadio/)\n\n` +
+                        `🧠 *Inteligencia Artificial*\n• [Vigilante AI](https://hjalmarmeza.github.io/Vigilante_Privacidad/)\n• [MusiChris](https://hjalmarmeza.github.io/MusiChris/)\n\n` +
+                        `🎙️ *Voz*\n• [Talk.Me](https://hjalmarmeza.github.io/Talk.Me/)\n\n` +
+                        `💎 *Central*\n• [Horizon Hub](https://hjalmarmeza.github.io/Horizon_hub/)\n• [CV Elite](https://hjalmarmeza.github.io/cv/)\n\n` +
+                        `_Usa /url para ver la lista completa._`;
         await sendTelegramMessage(chatId, catalog);
         return res.status(200).send('OK');
     }
 
-    // 5. COMANDO /VCARD
+    // 6. COMANDO /VCARD
     if (text === '/vcard') {
         await sendTelegramMessage(chatId, "📇 [Tu Digital VCard](https://hjalmarmeza.github.io/vcard/)");
         return res.status(200).send('OK');
@@ -129,7 +119,7 @@ async function getGitHubStatus() {
         });
         const repos = await resp.json();
         const top = repos.slice(0, 5);
-        let r = `🛰 *RADAR v3.2*\n\n`;
+        let r = `🛰 *RADAR v3.5*\n\n`;
         top.forEach(repo => r += `📂 *${repo.name}*\n└ 🔗 [GitHub](${repo.html_url})\n\n`);
         r += `📊 *Total:* ${repos.length}`;
         return r;
@@ -141,5 +131,13 @@ async function sendTelegramMessage(chatId, text) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'Markdown', disable_web_page_preview: false })
+    });
+}
+
+async function sendTelegramPhoto(chatId, photoUrl, caption) {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, photo: photoUrl, caption: caption, parse_mode: 'Markdown' })
     });
 }
