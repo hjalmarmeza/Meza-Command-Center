@@ -141,7 +141,7 @@ module.exports = async function (req, res) {
 
 async function askGemini(prompt) {
     try {
-        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
         const aiResponse = await fetch(aiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
