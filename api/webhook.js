@@ -11,6 +11,22 @@ module.exports = async function (req, res) {
     const chatId = message.chat.id;
     const text = message.text.toLowerCase().trim();
 
+    // 0. COMANDO START / COMANDOS
+    if (text === '/start' || text === '/comandos') {
+        const menu = `🤖 *COMMAND CENTER v3.4*\n\n` +
+                     `🛰 *INFRAESTRUCTURA*\n` +
+                     `• /status - Radar de GitHub\n` +
+                     `• /url - Catálogo Horizon Hub (17)\n\n` +
+                     `⚖ *UTILITARIOS PRO*\n` +
+                     `• /dolar - Cambio USD / EUR / PEN\n` +
+                     `• /clima [ciudad] - Estado del tiempo\n\n` +
+                     `💎 *PERFIL*\n` +
+                     `• /vcard - Mi tarjeta digital\n\n` +
+                     `_O simplemente háblame..._`;
+        await sendTelegramMessage(chatId, menu);
+        return res.status(200).send('OK');
+    }
+
     // 1. COMANDO /STATUS (RADAR GITHUB)
     if (text === '/status') {
         const statusReport = await getGitHubStatus();
