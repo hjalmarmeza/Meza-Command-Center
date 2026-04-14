@@ -11,7 +11,7 @@ module.exports = async function (req, res) {
     const text = message.text.toLowerCase().trim();
 
     if (text === '/start' || text === '/comandos') {
-        const menu = `🤖 *COMMAND CENTER v3.7*\n\n🛰 *INFRAESTRUCTURA*\n• /status - Radar de GitHub\n• /url - Catálogo Horizon Hub\n\n⚖ *UTILITARIOS*\n• /qr [enlace] - Generar QR\n• /dolar - Tipo de Cambio\n• /clima [ciudad] - Clima Global\n\n💎 *PERFIL*\n• /vcard - Mi tarjeta digital`;
+        const menu = `🤖 *COMMAND CENTER v3.8*\n\n🛰 *INFRAESTRUCTURA*\n• /status - Radar de GitHub\n• /url - Catálogo Horizon Hub\n\n⚖ *UTILITARIOS*\n• /resumen [texto/url] - Resumen Ejecutivo\n• /trend - Tendencias Globales\n• /linkedin [idea] - Borrador de Post\n• /vuelo [nº] - Info de Vuelo\n• /qr [enlace] - Generar QR\n• /clima [ciudad] - Clima Global\n\n💎 *PERFIL*\n• /vcard - Mi tarjeta digital\n• /dolar - Tipo de Cambio`;
         await sendTelegramMessage(chatId, menu);
         return res.status(200).send('OK');
     }
@@ -24,6 +24,42 @@ module.exports = async function (req, res) {
             const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(urlToConvert)}&color=0a1120&bgcolor=f59e0b`;
             await sendTelegramPhoto(chatId, qrApiUrl, `✅ *QR GENERADO*\n🔗 ${urlToConvert}`);
         }
+        return res.status(200).send('OK');
+    }
+
+    // --- COMANDOS EJECUTIVOS IA ---
+    
+    if (text.startsWith('/resumen')) {
+        const content = message.text.replace(/\/resumen/i, '').trim();
+        if (!content) return sendTelegramMessage(chatId, "⚠️ Envía el texto o URL para resumir.");
+        const prompt = `Actúa como un experto sintetizador. Resume el siguiente contenido en un "Resumen Ejecutivo" breve, con puntos clave (bullet points) y una conclusión accionable. Contenido: ${content}`;
+        const response = await askGemini(prompt);
+        await sendTelegramMessage(chatId, `📄 *RESUMEN EJECUTIVO*\n\n${response}`);
+        return res.status(200).send('OK');
+    }
+
+    if (text.startsWith('/trend')) {
+        const prompt = `Dime las 3 tendencias más importantes en tecnología y negocios de las últimas 24 horas. Sé breve y explica por qué son importantes.`;
+        const response = await askGemini(prompt);
+        await sendTelegramMessage(chatId, `🔥 *TENDENCIAS GLOBALES*\n\n${response}`);
+        return res.status(200).send('OK');
+    }
+
+    if (text.startsWith('/linkedin')) {
+        const idea = message.text.replace(/\/linkedin/i, '').trim();
+        if (!idea) return sendTelegramMessage(chatId, "⚠️ Dime de qué quieres que se trate el post.");
+        const prompt = `Eres un experto en LinkedIn. Crea un borrador de post profesional basado en esta idea: "${idea}". Incluye un Hook potente, 3 párrafos cortos de valor, una pregunta al final y 3 hashtags relevantes.`;
+        const response = await askGemini(prompt);
+        await sendTelegramMessage(chatId, `💎 *BORRADOR DE LINKEDIN*\n\n${response}`);
+        return res.status(200).send('OK');
+    }
+
+    if (text.startsWith('/vuelo')) {
+        const flightNum = message.text.replace(/\/vuelo/i, '').trim();
+        if (!flightNum) return sendTelegramMessage(chatId, "⚠️ Introduce el número de vuelo (ej: IB6252).");
+        const prompt = `Dame información general sobre el vuelo ${flightNum}. ¿De dónde sale? ¿A dónde llega? Da una breve descripción si tienes datos históricos o en tiempo real.`;
+        const response = await askGemini(prompt);
+        await sendTelegramMessage(chatId, `✈️ *INFORMACIÓN DE VUELO*\n\n${response}`);
         return res.status(200).send('OK');
     }
 
@@ -89,19 +125,23 @@ module.exports = async function (req, res) {
     }
 
     try {
-        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-        const aiResponse = await fetch(aiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: message.text }] }] })
-        });
-        const aiData = await aiResponse.json();
-        const botResponse = aiData.candidates?.[0]?.content?.parts?.[0]?.text || "No pude procesar tu mensaje.";
+        const botResponse = await askGemini(message.text);
         await sendTelegramMessage(chatId, botResponse);
     } catch (e) { await sendTelegramMessage(chatId, "⚠️ Fallo en el núcleo de IA."); }
 
     return res.status(200).send('OK');
 };
+
+async function askGemini(prompt) {
+    const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const aiResponse = await fetch(aiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    const aiData = await aiResponse.json();
+    return aiData.candidates?.[0]?.content?.parts?.[0]?.text || "No pude procesar tu solicitud.";
+}
 
 async function getGitHubStatus() {
     try {
