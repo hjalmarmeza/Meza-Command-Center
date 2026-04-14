@@ -49,71 +49,47 @@ module.exports = async function (req, res) {
             })
         });
 
-        const aiData = await aiResponse.json();
-
-        // --- Mejora de Integridad (Skill Flow v3.7) ---
-        if (aiData.error) {
-            const errorMsg = aiData.error.message || "Error desconocido";
-            if (aiData.error.code === 429) {
-                return await sendTelegramMessage(chatId, "⚠️ *Límite alcanzado:* Google me pide un respiro. Espera 10 segundos y vuelve a intentar.");
-            }
-            return await sendTelegramMessage(chatId, `❌ *Google dice:* ${errorMsg}`);
-        }
-
-        if (aiData.candidates && aiData.candidates[0]) {
-            const candidate = aiData.candidates[0];
-            if (candidate.finishReason === 'SAFETY') {
-                return await sendTelegramMessage(chatId, "🛡️ *Aviso:* Google ha filtrado esta respuesta por sus políticas de seguridad.");
-            }
-            await sendTelegramMessage(chatId, candidate.content.parts[0].text);
-        } else {
-            console.error("Respuesta vacía:", aiData);
-            await sendTelegramMessage(chatId, "⏳ *Procesando:* La conexión es lenta o el mensaje es complejo. Inténtalo una vez más.");
-        }
-    } catch (e) {
-        console.error("AI critical failure:", e);
+        const data = await response.json();
+        const botResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "No pude procesar tu mensaje.";
+        await sendTelegramMessage(chatId, botResponse);
+    } catch (error) {
+        console.error("Error en Gemini API:", error);
+        await sendTelegramMessage(chatId, "⚠️ Error de conexión con el núcleo de IA.");
     }
 
     return res.status(200).send('OK');
 };
 
 async function getGitHubStatus() {
-    if (!GITHUB_TOKEN) return "❌ *Error:* El GITHUB_TOKEN no está configurado en Vercel.";
-    
+    if (!GITHUB_TOKEN) return "❌ GITHUB_TOKEN no configurado.";
     try {
         const response = await fetch('https://api.github.com/user/repos?per_page=100&sort=updated', {
-            headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
+            headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
         });
         const repos = await response.json();
-        
-        if (!Array.isArray(repos)) return "❌ No pude obtener la lista de repositorios.";
+        if (!Array.isArray(repos)) return "⚠️ Error al conectar con GitHub.";
 
-        let list = "🛰️ *REPORTE DE INFRAESTRUCTURA*\n\n";
-        repos.slice(0, 15).forEach(repo => {
-            const date = new Date(repo.updated_at).toLocaleDateString();
-            const emoji = repo.private ? '🔒' : '🌐';
-            list += `${emoji} *${repo.name}*\n└ Activo: ${date}\n🔗 [GitHub](${repo.html_url})\n\n`;
+        const activeRepos = repos.slice(0, 5);
+        let report = `🛰 *RADAR DE INFRAESTRUCTURA v3.2*\n\n`;
+        activeRepos.forEach(repo => {
+            report += `📂 *${repo.name}*\n└ 🕒 Activo: ${new Date(repo.updated_at).toLocaleDateString()}\n└ 🔗 [Ver Repo](${repo.html_url})\n\n`;
         });
-
-        list += `\n_Escaneados ${repos.length} repositorios totales._`;
-        return list;
+        report += `📊 *Total Repos:* ${repos.length}\n✅ *Estado:* Óptimo`;
+        return report;
     } catch (e) {
-        return "❌ Error al conectar con GitHub API.";
+        return "⚠️ Error accediendo al Radar.";
     }
 }
 
 async function sendTelegramMessage(chatId, text) {
-    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-    try {
-        await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'Markdown' })
-        });
-    } catch (e) {
-        console.error("Telegram Error:", e);
-    }
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: chatId,
+            text: text,
+            parse_mode: 'Markdown',
+            disable_web_page_preview: false
+        })
+    });
 }
