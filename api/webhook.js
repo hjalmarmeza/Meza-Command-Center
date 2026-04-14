@@ -47,15 +47,37 @@ module.exports = async function (req, res) {
         return res.status(200).send('OK');
     }
 
-    // 4. COMANDO /URL (HORIZON HUB)
+    // 4. COMANDO /URL (HORIZON HUB - FULL CATALOG)
     if (text === '/url') {
-        const catalog = `🌐 *HORIZON HUB - LINKS DIRECTOS*\n\n` +
-                        `📌 [Dashboard](https://hjalmarmeza.github.io/Horizon_hub/)\n` +
-                        `📄 [CV Elite](https://hjalmarmeza.github.io/cv/)\n` +
-                        `🎙️ [Talk.Me](https://hjalmarmeza.github.io/Talk.Me/)\n` +
-                        `🎶 [MusiChris](https://hjalmarmeza.github.io/MusiChris/)\n` +
-                        `🤖 [Vigilante AI](https://hjalmarmeza.github.io/Vigilante_Privacidad/)\n\n` +
-                        `_Acceso instantáneo de producción._`;
+        const catalog = `🌐 *ECOSISTEMA HORIZON HUB (17 PROYECTOS)*\n\n` +
+                        `🛰 *Geo & Telemetría*\n` +
+                        `• [Alerta Vecinal](https://hjalmarmeza.github.io/Alerta-Vecinal/)\n` +
+                        `• [GeoRadio](https://hjalmarmeza.github.io/Georadio/)\n\n` +
+                        `🧠 *Inteligencia Artificial & IA*\n` +
+                        `• [Vigilante AI](https://hjalmarmeza.github.io/Vigilante_Privacidad/)\n` +
+                        `• [MusiChris Studio](https://hjalmarmeza.github.io/MusiChris/)\n` +
+                        `• [VoxMind AI](https://hjalmarmeza.github.io/voxmind/)\n\n` +
+                        `🎙 *Voz & Idiomas*\n` +
+                        `• [Talk.Me](https://hjalmarmeza.github.io/Talk.Me/)\n` +
+                        `• [Jardim de Historia](https://hjalmarmeza.github.io/Jardim-de-historia/)\n\n` +
+                        `⚖ *Gestión & Negocios*\n` +
+                        `• [Kopilot](https://hjalmarmeza.github.io/Kopilot/)\n` +
+                        `• [Restaurante360](https://hjalmarmeza.github.io/Restaurant/)\n` +
+                        `• [Linkedinmatic](https://hjalmarmeza.github.io/Linkedinmatic/)\n\n` +
+                        `🎨 *Moda & Estética*\n` +
+                        `• [FaceCut](https://hjalmarmeza.github.io/Facecut/)\n` +
+                        `• [Style TARA](https://hjalmarmeza.github.io/Tara/)\n\n` +
+                        `🏥 *Salud e Inclusión*\n` +
+                        `• [Allimentate](https://hjalmarmeza.github.io/Allimentate/)\n` +
+                        `• [MoodWeather](https://hjalmarmeza.github.io/Moodweather/)\n` +
+                        `• [Chart Less](https://hjalmarmeza.github.io/chartless/)\n\n` +
+                        `🎮 *Interfaces & Control*\n` +
+                        `• [Allivision](https://hjalmarmeza.github.io/Allivision/)\n` +
+                        `• [HandRacer](https://hjalmarmeza.github.io/Handracer/)\n\n` +
+                        `💎 *Centrales*\n` +
+                        `• [Horizon Hub Dashboard](https://hjalmarmeza.github.io/Horizon_hub/)\n` +
+                        `• [CV Ejecutivo Elite](https://hjalmarmeza.github.io/cv/)\n\n` +
+                        `_Acceso total de producción._`;
         await sendTelegramMessage(chatId, catalog);
         return res.status(200).send('OK');
     }
