@@ -57,22 +57,28 @@ module.exports = async function (req, res) {
     }
 
     if (text === '/url') {
-        const catalog = `🌐 *HORIZON HUB (URLS VERIFICADAS)*\n\n` +
+        const catalog = `🌐 *HORIZON HUB - URLS VERIFICADAS*\n\n` +
                         `🛰 *Geo & Telemetría*\n` +
-                        `• [Alerta Vecinal](https://hjalmarmeza.github.io/Alerta-Vecinal/)\n` +
-                        `• [GeoRadio](https://hjalmarmeza.github.io/Georadio/)\n\n` +
+                        `• [Alerta Vecinal](https://hjalmarmeza.github.io/alertavecinal/)\n` +
+                        `• [GeoRadio](https://hjalmarmeza.github.io/GeoRadio/)\n\n` +
                         `🎙️ *Voz & Idiomas*\n` +
-                        `• [Talk.Me](https://hjalmarmeza.github.io/Talk.Me/)\n` +
-                        `• [Jardin de Historias](https://hjalmarmeza.github.io/Jardim-de-historia/)\n\n` +
+                        `• [Talk.Me](https://hjalmarmeza.github.io/talk.me/)\n` +
+                        `• [Jardin de Historias](https://hjalmarmeza.github.io/jardindehistorias/)\n\n` +
                         `🎶 *Producción Digital*\n` +
-                        `• [MusiChris Studio](https://hjalmarmeza.github.io/MusiChris-Studio/)\n\n` +
+                        `• [MusiChris Studio](https://hjalmarmeza.github.io/MusiChris-Studio/)\n` +
+                        `• [MusiChris App](https://hjalmarmeza.github.io/MusiChris-App/)\n\n` +
                         `🤖 *Agentes IA*\n` +
                         `• [Vigilante AI](https://hjalmarmeza.github.io/vigilante-privacidad/)\n` +
-                        `• [VoxMind AI](https://hjalmarmeza.github.io/Voxmind_AI/)\n\n` +
-                        `💎 *Bases*\n` +
-                        `• [Horizon Hub](https://hjalmarmeza.github.io/Horizon_hub/)\n` +
-                        `• [CV Elite](https://hjalmarmeza.github.io/cv/)\n\n` +
-                        `_Sincronizado 100% con GitHub Pages._`;
+                        `• [VoxMind AI](https://hjalmarmeza.github.io/Voxmind_AI/)\n` +
+                        `• [FaceCut](https://facecut-625262028782.us-west1.run.app/)\n\n` +
+                        `⚖️ *Gestión*\n` +
+                        `• [Kopilot](https://hjalmarmeza.github.io/kopilot/)\n` +
+                        `• [Restaurante](https://hjalmarmeza.github.io/sistema-restaurante/)\n` +
+                        `• [ChartLess](https://hjalmarmeza.github.io/chartless/)\n\n` +
+                        `💎 *Centrales*\n` +
+                        `• [CV Elite](https://hjalmarmeza.github.io/cv/)\n` +
+                        `• [VCard](https://hjalmarmeza.github.io/vcard/)\n\n` +
+                        `_Extraído del Horizon Hub Dashboard._`;
         await sendTelegramMessage(chatId, catalog);
         return res.status(200).send('OK');
     }
