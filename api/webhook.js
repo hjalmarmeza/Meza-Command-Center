@@ -133,14 +133,28 @@ module.exports = async function (req, res) {
 };
 
 async function askGemini(prompt) {
-    const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-    const aiResponse = await fetch(aiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-    });
-    const aiData = await aiResponse.json();
-    return aiData.candidates?.[0]?.content?.parts?.[0]?.text || "No pude procesar tu solicitud.";
+    try {
+        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const aiResponse = await fetch(aiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const aiData = await aiResponse.json();
+
+        // Log de diagnóstico — visible en Vercel Function Logs
+        if (!aiData.candidates || aiData.candidates.length === 0) {
+            console.error('[Gemini Error] Respuesta sin candidatos:', JSON.stringify(aiData));
+            const blockReason = aiData.promptFeedback?.blockReason;
+            if (blockReason) return `⚠️ Gemini bloqueó la respuesta (${blockReason}). Reformula tu consulta.`;
+            return "⚠️ Gemini no devolvió respuesta. Inténtalo de nuevo en unos segundos.";
+        }
+
+        return aiData.candidates[0].content.parts[0].text;
+    } catch (err) {
+        console.error('[Gemini Fetch Error]', err.message);
+        return "⚠️ No se pudo conectar con Gemini. Revisa los logs de Vercel.";
+    }
 }
 
 async function getGitHubStatus() {
