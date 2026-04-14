@@ -3,17 +3,8 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 module.exports = async function (req, res) {
-    // Respuesta rápida a Vercel con diagnóstico
-    if (req.method !== 'POST') {
-        const diagnostic = {
-            status: 'Online',
-            hasTelegramToken: !!TELEGRAM_TOKEN,
-            hasGithubToken: !!GITHUB_TOKEN,
-            hasGeminiToken: !!GEMINI_API_KEY,
-            version: '3.1-DEBUG'
-        };
-        return res.status(200).json(diagnostic);
-    }
+    // Respuesta rápida a Vercel
+    if (req.method !== 'POST') return res.status(200).send('Bot Status: Online');
     
     const { message } = req.body;
     if (!message || !message.text) return res.status(200).send('OK');
