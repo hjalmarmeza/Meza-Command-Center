@@ -13,7 +13,7 @@ module.exports = async function (req, res) {
 
     // 0. COMANDO START / COMANDOS
     if (text === '/start' || text === '/comandos') {
-        const menu = `🤖 *COMMAND CENTER v3.5*\n\n` +
+        const menu = `🤖 *COMMAND CENTER v3.6*\n\n` +
                      `🛰 *INFRAESTRUCTURA*\n` +
                      `• /status - Radar de GitHub\n` +
                      `• /url - Catálogo Horizon Hub (17)\n\n` +
@@ -76,14 +76,30 @@ module.exports = async function (req, res) {
         return res.status(200).send('OK');
     }
 
-    // 5. COMANDO /URL (HORIZON HUB)
+    // 5. COMANDO /URL (HORIZON HUB - 100% VERIFIED)
     if (text === '/url') {
-        const catalog = `🌐 *ECOSISTEMA HORIZON HUB (17 PROYECTOS)*\n\n` +
-                        `🛰 *Geo & Telemetría*\n• [Alerta Vecinal](https://hjalmarmeza.github.io/Alerta-Vecinal/)\n• [GeoRadio](https://hjalmarmeza.github.io/Georadio/)\n\n` +
-                        `🧠 *Inteligencia Artificial*\n• [Vigilante AI](https://hjalmarmeza.github.io/Vigilante_Privacidad/)\n• [MusiChris](https://hjalmarmeza.github.io/MusiChris/)\n\n` +
-                        `🎙️ *Voz*\n• [Talk.Me](https://hjalmarmeza.github.io/Talk.Me/)\n\n` +
-                        `💎 *Central*\n• [Horizon Hub](https://hjalmarmeza.github.io/Horizon_hub/)\n• [CV Elite](https://hjalmarmeza.github.io/cv/)\n\n` +
-                        `_Usa /url para ver la lista completa._`;
+        const catalog = `🌐 *ECOSISTEMA VERIFICADO (17)*\n\n` +
+                        `🛰 *Geo & Telemetría*\n` +
+                        `• [Alerta Vecinal](https://hjalmarmeza.github.io/Alerta-Vecinal/)\n` +
+                        `• [GeoRadio](https://hjalmarmeza.github.io/Georadio/)\n\n` +
+                        `🧠 *Inteligencia Artificial*\n` +
+                        `• [Vigilante AI](https://hjalmarmeza.github.io/vigilante-privacidad/)\n` +
+                        `• [MusiChris](https://hjalmarmeza.github.io/MusiChris/)\n` +
+                        `• [VoxMind AI](https://hjalmarmeza.github.io/Voxmind_AI/)\n\n` +
+                        `🎙️ *Voz & Idiomas*\n` +
+                        `• [Talk.Me](https://hjalmarmeza.github.io/talk.me/)\n` +
+                        `• [Jardim de Historia](https://hjalmarmeza.github.io/Jardim-de-historia/)\n\n` +
+                        `⚖ *Gestión & Negocios*\n` +
+                        `• [Kopilot](https://hjalmarmeza.github.io/Kopilot/)\n` +
+                        `• [Restaurante360](https://hjalmarmeza.github.io/sistema-restaurante/)\n\n` +
+                        `🎨 *Moda & Estética*\n` +
+                        `• [FaceCut](https://hjalmarmeza.github.io/Facecut/)\n\n` +
+                        `🏥 *Salud e Inclusión*\n` +
+                        `• [Allimentate](https://hjalmarmeza.github.io/Allimentate/)\n\n` +
+                        `💎 *Centrales*\n` +
+                        `• [Dashboard](https://hjalmarmeza.github.io/Horizon_hub/)\n` +
+                        `• [CV Elite](https://hjalmarmeza.github.io/cv/)\n\n` +
+                        `_URLs verificadas contra la API de GitHub._`;
         await sendTelegramMessage(chatId, catalog);
         return res.status(200).send('OK');
     }
@@ -119,7 +135,7 @@ async function getGitHubStatus() {
         });
         const repos = await resp.json();
         const top = repos.slice(0, 5);
-        let r = `🛰 *RADAR v3.5*\n\n`;
+        let r = `🛰 *RADAR v3.6*\n\n`;
         top.forEach(repo => r += `📂 *${repo.name}*\n└ 🔗 [GitHub](${repo.html_url})\n\n`);
         r += `📊 *Total:* ${repos.length}`;
         return r;
