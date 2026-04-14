@@ -39,18 +39,18 @@ module.exports = async function (req, res) {
     }
 
     if (text.startsWith('/trend')) {
-        const prompt = `Dime las 3 tendencias más importantes en tecnología y negocios de las últimas 24 horas. Sé breve y explica por qué son importantes.`;
+        const prompt = `Eres un analista de negocios y tecnología. Lista las 3 tendencias más importantes y disruptivas del mundo tech y empresarial en este momento. Para cada una: nombre breve, por qué importa y su impacto a futuro. Sé conciso y usa emojis.`;
         const response = await askGemini(prompt);
-        await sendTelegramMessage(chatId, `🔥 *TENDENCIAS GLOBALES*\n\n${response}`);
+        await sendTelegramMessage(chatId, `🔥 *TENDENCIAS GLOBALES*\n\n${response.slice(0, 3800)}`);
         return res.status(200).send('OK');
     }
 
     if (text.startsWith('/linkedin')) {
         const idea = message.text.replace(/\/linkedin/i, '').trim();
         if (!idea) return sendTelegramMessage(chatId, "⚠️ Dime de qué quieres que se trate el post.");
-        const prompt = `Eres un experto en LinkedIn. Crea un borrador de post profesional basado en esta idea: "${idea}". Incluye un Hook potente, 3 párrafos cortos de valor, una pregunta al final y 3 hashtags relevantes.`;
+        const prompt = `Crea un post para LinkedIn sobre: ${idea}. Estructura: 1 frase hook impactante, 3 ideas de valor cortas, 1 pregunta al cierre y 3 hashtags. Solo texto, sin markdown especial, máximo 900 caracteres.`;
         const response = await askGemini(prompt);
-        await sendTelegramMessage(chatId, `💎 *BORRADOR DE LINKEDIN*\n\n${response}`);
+        await sendTelegramMessage(chatId, `💎 *BORRADOR LINKEDIN*\n\n${response.slice(0, 3800)}`);
         return res.status(200).send('OK');
     }
 
