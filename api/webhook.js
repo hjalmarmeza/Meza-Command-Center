@@ -27,6 +27,13 @@ module.exports = async function (req, res) {
         return res.status(200).send('OK');
     }
 
+    // --- DIAGNÓSTICO ---
+    if (text === '/ping') {
+        const response = await askGemini('Responde solo estas dos palabras: Sistema OK');
+        await sendTelegramMessage(chatId, `🛰 *DIAGNÓSTICO GEMINI*\n\n${response}`);
+        return res.status(200).send('OK');
+    }
+
     // --- COMANDOS EJECUTIVOS IA ---
     
     if (text.startsWith('/resumen')) {
@@ -134,7 +141,7 @@ module.exports = async function (req, res) {
 
 async function askGemini(prompt) {
     try {
-        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const aiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
         const aiResponse = await fetch(aiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
